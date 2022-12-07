@@ -1,7 +1,10 @@
+#include <sdfraymarching/Application.hpp>
+
 #include <iostream>
 
 int main(int argc, char const *argv[])
 {
-    std::cout << "Hello SDF raymacrhing" << std::endl;
+    Application application;
+
     return 0;
 }
