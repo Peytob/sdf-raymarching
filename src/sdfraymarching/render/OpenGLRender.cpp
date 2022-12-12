@@ -5,13 +5,11 @@
 #include <GLFW/glfw3.h>
 
 #include <sdfraymarching/utils/Logger.hpp>
+#include <sdfraymarching/render/OpenGLRenderCreatingException.hpp>
 
 #include "OpenGLRender.hpp"
 
-OpenGLRender::OpenGLRender() {
-    Logger::info("Initializing OpenGL rendering engine.");
-
-    Logger::info("Initializing GLFW library.");
+void initializeGlfw() {
     if (glfwInit() != GLFW_TRUE) {
         const char* errorDescription;
         const int errorCode = glfwGetError(&errorDescription);
@@ -20,11 +18,69 @@ OpenGLRender::OpenGLRender() {
             "Error while GLFW initializating! Code: " + std::to_string(errorCode) +
             "; description: " + std::string(errorDescription);
 
-        Logger::error(message);
+        throw OpenGLRenderCreatingException(message);
     }
-    Logger::info("GLFW library was initialized.");
+}
+
+GLFWwindow* createWindow(int width, int height, const std::string& title) {
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+
+    GLFWwindow* window = glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr);
+
+    if (nullptr == window) {
+        const char* description;
+        glfwGetError(&description);
+
+        std::string message = "Error while creating GLFW window. " + std::string(description);
+
+        throw OpenGLRenderCreatingException(message);
+    }
+
+    return window;
+}
+
+void initializeGlew() {
+    glewExperimental = GL_TRUE;
+    const GLenum glewInitializationCode = glewInit();
+    if (glewInitializationCode != GLEW_OK) {
+        std::string message =
+            "Error while GLEW initialzing!. "
+            + std::string((const char*) glewGetErrorString(glewInitializationCode));
+
+        throw OpenGLRenderCreatingException(message);
+    }
+}
+
+OpenGLRender::OpenGLRender(int width, int height, const std::string& title) :
+    window(nullptr) {
+
+    Logger::info("Initializing OpenGL rendering engine.");
+
+    Logger::info("Initializing GLFW library.");
+    initializeGlfw();
+    Logger::info("GLFW library initialized.");
+
+    Logger::info("Creating new GLFW window.");
+    this->window = createWindow(width, height, title);
+    glfwMakeContextCurrent(window);
+    Logger::info("New GLFW window created.");
+
+    Logger::info("Initializing GLEW library.");
+    initializeGlew();
+    Logger::info("GLEW library initialized.");
 }
 
 OpenGLRender::~OpenGLRender() {
     Logger::info("Destroying OpenGL rendering engine.");
+
+    Logger::info("Destroying GLFW window");
+    glfwDestroyWindow(window);
+    Logger::info("GLFW window destroyed.");
+
+    Logger::info("Terminating GLFW library.");
+    glfwTerminate();
+    Logger::info("GLFW library terminated.");
 }

@@ -3,14 +3,17 @@
 
 #pragma once
 
+#include <string>
+#include <GLFW/glfw3.h>
+
 class OpenGLRender
 {
 public:
-    OpenGLRender();
+    OpenGLRender(int width, int height, const std::string& title);
     ~OpenGLRender();
 
 private:
-
+    GLFWwindow* window;
 };
 
 #endif
