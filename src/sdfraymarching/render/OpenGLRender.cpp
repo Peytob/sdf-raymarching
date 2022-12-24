@@ -5,7 +5,9 @@
 #include <GLFW/glfw3.h>
 
 #include <sdfraymarching/utils/Logger.hpp>
+#include <sdfraymarching/render/Canvas.hpp>
 #include <sdfraymarching/render/OpenGLRenderCreatingException.hpp>
+#include <sdfraymarching/render/OpenGLRenderContext.hpp>
 
 #include "OpenGLRender.hpp"
 
@@ -71,6 +73,8 @@ OpenGLRender::OpenGLRender(int width, int height, const std::string& title) :
     Logger::info("Initializing GLEW library.");
     initializeGlew();
     Logger::info("GLEW library initialized.");
+
+    canvas = new Canvas();
 }
 
 OpenGLRender::~OpenGLRender() {
@@ -83,4 +87,25 @@ OpenGLRender::~OpenGLRender() {
     Logger::info("Terminating GLFW library.");
     glfwTerminate();
     Logger::info("GLFW library terminated.");
+
+    delete canvas;
+}
+
+void OpenGLRender::draw(const OpenGLRenderContext& renderContext) {
+    glUseProgram(renderContext.getShaderProgram()->getId());
+    glBindVertexArray(canvas->getVao());
+    glDrawElements(GL_TRIANGLES, canvas->getIndexesCount(), GL_UNSIGNED_INT, 0);
+}
+
+void OpenGLRender::pullEvents() {
+    glfwPollEvents();
+}
+
+void OpenGLRender::clear() {
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+}
+
+void OpenGLRender::display() {
+    glfwSwapBuffers(window);
 }

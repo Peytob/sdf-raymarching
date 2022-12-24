@@ -6,5 +6,5 @@ int main(int argc, char const *argv[])
 {
     Application application;
 
-    return 0;
+    return application.start();
 }

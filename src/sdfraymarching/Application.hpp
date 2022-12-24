@@ -11,6 +11,8 @@ public:
     Application();
     ~Application();
 
+    int start();
+
 private:
     OpenGLRender* renderer;
     ShaderProgram* worldShaderProgram;

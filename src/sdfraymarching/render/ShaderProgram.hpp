@@ -4,6 +4,7 @@
 #pragma once
 
 #include <GL/gl.h>
+#include <string>
 
 class Shader;
 

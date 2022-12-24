@@ -6,7 +6,7 @@
 
 #include <sdfraymarching/render/OpenGLRenderCreatingException.hpp>
 #include <sdfraymarching/render/OpenGLResourceCreatingException.hpp>
-#include <sdfraymarching/render/Shader.hpp>
+#include <sdfraymarching/render/OpenGLRenderContext.hpp>
 
 #include "Application.hpp"
 
@@ -32,4 +32,18 @@ Application::~Application() {
     Logger::info("Destroying raymarching demo application.");
     delete this->renderer;
     delete this->worldShaderProgram;
+}
+
+int Application::start() {
+    OpenGLRenderContext renderContext;
+    renderContext.setShaderProgram(worldShaderProgram);
+
+    while (true) {
+        renderer->pullEvents();
+        renderer->clear();
+        renderer->draw(renderContext);
+        renderer->display();
+    }
+    
+    return 0;
 }
