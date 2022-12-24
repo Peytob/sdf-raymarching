@@ -6,6 +6,7 @@
 #include <string>
 
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
 
 #include <sdfraymarching/render/Canvas.hpp>
 
@@ -16,10 +17,17 @@ public:
     OpenGLRender(int width, int height, const std::string& title);
     ~OpenGLRender();
 
+    void resetCursor();
     void draw(const OpenGLRenderContext& renderContext);
     void pullEvents();
     void clear();
     void display();
+
+    void close();
+    bool isClosed();
+
+    glm::vec2 getCursorPosition();
+    void setKeyCallback(GLFWkeyfun callback);
 
 private:
     GLFWwindow* window;

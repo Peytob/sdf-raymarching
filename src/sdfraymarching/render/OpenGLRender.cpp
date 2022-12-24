@@ -68,6 +68,8 @@ OpenGLRender::OpenGLRender(int width, int height, const std::string& title) :
     Logger::info("Creating new GLFW window.");
     this->window = createWindow(width, height, title);
     glfwMakeContextCurrent(window);
+    glfwSetWindowUserPointer(window, this);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
     Logger::info("New GLFW window created.");
 
     Logger::info("Initializing GLEW library.");
@@ -91,10 +93,33 @@ OpenGLRender::~OpenGLRender() {
     delete canvas;
 }
 
+glm::vec2 OpenGLRender::getCursorPosition() {
+    double xpos, ypos;
+    glfwGetCursorPos(window, &xpos, &ypos);
+    return { xpos, ypos };
+}
+
+bool OpenGLRender::isClosed() {
+    return glfwWindowShouldClose(window);
+}
+
+void OpenGLRender::close() {
+    glfwSetWindowShouldClose(window, true);
+}
+
+void OpenGLRender::setKeyCallback(GLFWkeyfun callback) {
+    Logger::info("Setup window key callback");
+    glfwSetKeyCallback(window, callback);
+}
+
 void OpenGLRender::draw(const OpenGLRenderContext& renderContext) {
     glUseProgram(renderContext.getShaderProgram()->getId());
     glBindVertexArray(canvas->getVao());
     glDrawElements(GL_TRIANGLES, canvas->getIndexesCount(), GL_UNSIGNED_INT, 0);
+}
+
+void OpenGLRender::resetCursor() {
+    glfwSetCursorPos(window, 0.0, 0.0);
 }
 
 void OpenGLRender::pullEvents() {

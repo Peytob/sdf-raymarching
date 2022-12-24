@@ -14,6 +14,13 @@ Application::Application() {
     Logger::info("Initializing raymarching demo application.");
     try {
         this->renderer = new OpenGLRender(800, 600, "Ray marching");
+        // TODO Hide GLFW features
+        this->renderer->setKeyCallback([](GLFWwindow* window, int key, int scancode, int action, int mode) {
+            OpenGLRender* render = static_cast<OpenGLRender*>(glfwGetWindowUserPointer(window));
+            if (key == GLFW_KEY_ESCAPE) {
+                render->close();
+            }
+        });
     }
     catch(const OpenGLRenderCreatingException& e) {
         Logger::error("Error while creating OpenGLRenderer. Description: " + std::string(e.what()));
@@ -38,7 +45,8 @@ int Application::start() {
     OpenGLRenderContext renderContext;
     renderContext.setShaderProgram(worldShaderProgram);
 
-    while (true) {
+    while (!renderer->isClosed()) {
+        renderer->resetCursor();
         renderer->pullEvents();
         renderer->clear();
         renderer->draw(renderContext);
