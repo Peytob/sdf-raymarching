@@ -3,7 +3,8 @@
 
 #pragma once
 
-#include "render/OpenGLRender.hpp"
+#include <sdfraymarching/render/OpenGLRender.hpp>
+#include <sdfraymarching/render/ShaderProgram.hpp>
 
 class Application {
 public:
@@ -12,6 +13,7 @@ public:
 
 private:
     OpenGLRender* renderer;
+    ShaderProgram* worldShaderProgram;
 };
 
 #endif

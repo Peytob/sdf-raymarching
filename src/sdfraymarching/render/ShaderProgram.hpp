@@ -10,6 +10,8 @@ class Shader;
 class ShaderProgram
 {
 public:
+    static ShaderProgram* loadShaderProgram(const std::string& vertexShaderFile, const std::string& fragmentShaderFile);
+
     ShaderProgram(const Shader& vertexShader, const Shader& fragmentShader);
     ~ShaderProgram();
 
