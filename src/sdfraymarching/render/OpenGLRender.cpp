@@ -57,7 +57,8 @@ void initializeGlew() {
 }
 
 OpenGLRender::OpenGLRender(int width, int height, const std::string& title) :
-    window(nullptr) {
+    window(nullptr),
+    defaultCursorPosition(width / 2, height / 2) {
 
     Logger::info("Initializing OpenGL rendering engine.");
 
@@ -93,10 +94,10 @@ OpenGLRender::~OpenGLRender() {
     delete canvas;
 }
 
-glm::vec2 OpenGLRender::getCursorPosition() {
+glm::vec2 OpenGLRender::getCursorDelta() {
     double xpos, ypos;
     glfwGetCursorPos(window, &xpos, &ypos);
-    return { xpos, ypos };
+    return glm::vec2(xpos, ypos) - defaultCursorPosition;
 }
 
 bool OpenGLRender::isClosed() {
@@ -119,7 +120,7 @@ void OpenGLRender::draw(const OpenGLRenderContext& renderContext) {
 }
 
 void OpenGLRender::resetCursor() {
-    glfwSetCursorPos(window, 0.0, 0.0);
+    glfwSetCursorPos(window, defaultCursorPosition.x, defaultCursorPosition.y);
 }
 
 void OpenGLRender::pullEvents() {
@@ -133,4 +134,8 @@ void OpenGLRender::clear() {
 
 void OpenGLRender::display() {
     glfwSwapBuffers(window);
+}
+
+int OpenGLRender::getKeyStatus(int key) {
+    return glfwGetKey(window, key);
 }

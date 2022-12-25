@@ -26,12 +26,14 @@ public:
     void close();
     bool isClosed();
 
-    glm::vec2 getCursorPosition();
+    glm::vec2 getCursorDelta();
+    int getKeyStatus(int key);
     void setKeyCallback(GLFWkeyfun callback);
 
 private:
     GLFWwindow* window;
     Canvas* canvas;
+    glm::vec2 defaultCursorPosition;
 };
 
 #endif

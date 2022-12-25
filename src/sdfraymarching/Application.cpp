@@ -45,13 +45,42 @@ int Application::start() {
     OpenGLRenderContext renderContext;
     renderContext.setShaderProgram(worldShaderProgram);
 
+    renderer->resetCursor();
+
     while (!renderer->isClosed()) {
-        renderer->resetCursor();
+        processControl();
         renderer->pullEvents();
         renderer->clear();
         renderer->draw(renderContext);
         renderer->display();
     }
-    
+
     return 0;
+}
+
+
+void Application::processControl() {
+    glm::vec2 cursorPosition = renderer->getCursorDelta();
+
+    if (glm::length(cursorPosition) > FLT_EPSILON) {
+        Logger::info("Cursor: " + std::to_string(cursorPosition.x) + "; " + std::to_string(cursorPosition.y));
+    }
+
+    if (renderer->getKeyStatus(GLFW_KEY_A) == GLFW_PRESS) {
+        Logger::info("a");
+    }
+
+    if (renderer->getKeyStatus(GLFW_KEY_D) == GLFW_PRESS) {
+        Logger::info("d");
+    }
+
+    if (renderer->getKeyStatus(GLFW_KEY_W) == GLFW_PRESS) {
+        Logger::info("w");
+    }
+
+    if (renderer->getKeyStatus(GLFW_KEY_S) == GLFW_PRESS) {
+        Logger::info("s");
+    }
+
+    renderer->resetCursor();
 }

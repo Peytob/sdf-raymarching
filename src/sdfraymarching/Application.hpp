@@ -16,6 +16,8 @@ public:
 private:
     OpenGLRender* renderer;
     ShaderProgram* worldShaderProgram;
+
+    void processControl();
 };
 
 #endif
