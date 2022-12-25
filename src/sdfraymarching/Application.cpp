@@ -7,13 +7,19 @@
 #include <sdfraymarching/render/OpenGLRenderCreatingException.hpp>
 #include <sdfraymarching/render/OpenGLResourceCreatingException.hpp>
 #include <sdfraymarching/render/OpenGLRenderContext.hpp>
+#include <sdfraymarching/render/OpenGLRender.hpp>
+#include <sdfraymarching/render/ShaderProgram.hpp>
+#include <sdfraymarching/render/Camera.hpp>
 
 #include "Application.hpp"
 
 Application::Application() {
+    const int windowWidth = 800;
+    const int windowHeigth = 600;
+
     Logger::info("Initializing raymarching demo application.");
     try {
-        this->renderer = new OpenGLRender(800, 600, "Ray marching");
+        this->renderer = new OpenGLRender(windowWidth, windowHeigth, "Ray marching");
         // TODO Hide GLFW features
         this->renderer->setKeyCallback([](GLFWwindow* window, int key, int scancode, int action, int mode) {
             OpenGLRender* render = static_cast<OpenGLRender*>(glfwGetWindowUserPointer(window));
@@ -33,17 +39,26 @@ Application::Application() {
         Logger::error("Error while loading world shader program. Description: " + std::string(e.what()));
         std::exit(1);
     }
+
+    this->camera = new Camera(
+        {0.0, 0.0, 0.0},
+        {1.0, 0.0, 0.0},
+        glm::radians(90.0),
+        windowWidth / windowHeigth
+    );
 }
 
 Application::~Application() {
     Logger::info("Destroying raymarching demo application.");
     delete this->renderer;
     delete this->worldShaderProgram;
+    delete this->camera;
 }
 
 int Application::start() {
     OpenGLRenderContext renderContext;
     renderContext.setShaderProgram(worldShaderProgram);
+    renderContext.setCamera(camera);
 
     renderer->resetCursor();
 

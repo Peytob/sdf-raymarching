@@ -5,6 +5,8 @@
 
 #include <sdfraymarching/render/ShaderProgram.hpp>
 
+class Camera;
+
 class OpenGLRenderContext {
 public:
     OpenGLRenderContext() = default;
@@ -13,8 +15,12 @@ public:
     ShaderProgram* getShaderProgram() const;
     void setShaderProgram(ShaderProgram* shaderProgram);
 
+    void setCamera(Camera* camera);
+    Camera* getCamera() const;
+
 private:
     ShaderProgram* shaderProgram;
+    Camera* camera;
 };
 
 #endif

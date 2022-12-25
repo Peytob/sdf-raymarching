@@ -3,8 +3,9 @@
 
 #pragma once
 
-#include <sdfraymarching/render/OpenGLRender.hpp>
-#include <sdfraymarching/render/ShaderProgram.hpp>
+class OpenGLRender;
+class ShaderProgram;
+class Camera;
 
 class Application {
 public:
@@ -16,6 +17,7 @@ public:
 private:
     OpenGLRender* renderer;
     ShaderProgram* worldShaderProgram;
+    Camera* camera;
 
     void processControl();
 };

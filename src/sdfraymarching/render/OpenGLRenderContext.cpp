@@ -7,3 +7,11 @@ ShaderProgram* OpenGLRenderContext::getShaderProgram() const {
 void OpenGLRenderContext::setShaderProgram(ShaderProgram* shaderProgram) {
     this->shaderProgram = shaderProgram;
 }
+
+void OpenGLRenderContext::setCamera(Camera* camera) {
+    this->camera = camera;
+}
+
+Camera* OpenGLRenderContext::getCamera() const {
+    return this->camera;
+}
