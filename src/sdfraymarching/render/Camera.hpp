@@ -17,6 +17,8 @@ public:
     void setFrontVector(const glm::vec3& frontVector);
     const glm::vec3& getFrontVector() const;
 
+    const glm::vec3& getRigthVector() const;
+
     void setAspect(float aspect);
     float getAspect() const;
 
@@ -31,7 +33,7 @@ public:
 private:
     glm::vec3 position;
     glm::vec3 frontVector;
-    glm::vec3 worldUpVector;
+    glm::vec3 upVector;
     glm::vec3 rightVector;
 
     float yaw;

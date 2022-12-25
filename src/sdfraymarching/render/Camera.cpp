@@ -5,10 +5,14 @@
 
 #include "Camera.hpp"
 
+namespace {
+    const glm::vec3 WORLD_UP_VECTOR = {0.0f, 1.0f, 0.0f};
+}
+
 Camera::Camera(const glm::vec3& position, const glm::vec3& frontVector, const float fov, const float aspect) :
     position(position),
     frontVector(frontVector),
-    worldUpVector(0.0f, 1.0f, 0.0f),
+    upVector(WORLD_UP_VECTOR),
     yaw(-90.0f),
     pitch(0.0f),
     fov(fov),
@@ -38,7 +42,7 @@ const glm::vec3& Camera::getFrontVector() const {
 }
 
 void Camera::setFov(const float fov) {
-    this->fov = glm::fmod(fov, 2.0f);
+    this->fov = glm::fmod(fov, 180.0f);
 }
 
 float Camera::getFov() const {
@@ -53,22 +57,26 @@ float Camera::getAspect() const {
     return this->aspect;
 }
 
+const glm::vec3& Camera::getRigthVector() const {
+    return this->rightVector;
+}
+
 void Camera::rotate(float xDif, float yDif) {
     yaw += xDif;
     pitch += yDif;
 
-    pitch = std::max(pitch, 90.0f);
-    pitch = std::min(pitch, -90.0f);
+    pitch = std::min(pitch, 90.0f);
+    pitch = std::max(pitch, -90.0f);
 }
 
 glm::mat4 Camera::computeProjectionMatrix() {
     updateVectors();
-    return glm::perspective(glm::radians(fov), aspect, 0.1f, 100.0f);
+    return glm::perspective(fov / 2.0f, aspect, 0.1f, 100.0f);
 }
 
 glm::mat4 Camera::computeLookAtMatrix() {
     updateVectors();
-    return glm::lookAt(position, position + frontVector, worldUpVector);
+    return glm::lookAt(position, position + frontVector, upVector);
 }
 
 void Camera::updateVectors() {
@@ -80,6 +88,6 @@ void Camera::updateVectors() {
 
     frontVector = glm::normalize(newFront);
 
-    rightVector = glm::normalize(glm::cross(frontVector, worldUpVector));
-    worldUpVector = glm::normalize(glm::cross(rightVector, frontVector));
+    rightVector = glm::normalize(glm::cross(frontVector, WORLD_UP_VECTOR));
+    upVector = glm::normalize(glm::cross(rightVector, frontVector));
 }

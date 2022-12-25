@@ -41,9 +41,9 @@ Application::Application() {
     }
 
     this->camera = new Camera(
-        {0.0, 0.0, 0.0},
-        {1.0, 0.0, 0.0},
-        glm::radians(90.0),
+        {0.0, 0.0, -2.0},
+        {0.0, 0.0, -1.0},
+        90.0,
         windowWidth / windowHeigth
     );
 }
@@ -61,11 +61,13 @@ int Application::start() {
     renderContext.setCamera(camera);
 
     renderer->resetCursor();
+    renderer->updateStaticUniforms(renderContext);
 
     while (!renderer->isClosed()) {
         processControl();
         renderer->pullEvents();
         renderer->clear();
+        renderer->updateDynamicUniforms(renderContext);
         renderer->draw(renderContext);
         renderer->display();
     }
@@ -75,26 +77,40 @@ int Application::start() {
 
 
 void Application::processControl() {
-    glm::vec2 cursorPosition = renderer->getCursorDelta();
+    const float moveSpeed = 0.25f;
+    const float mouseSensivity = 0.75f;
 
-    if (glm::length(cursorPosition) > FLT_EPSILON) {
-        Logger::info("Cursor: " + std::to_string(cursorPosition.x) + "; " + std::to_string(cursorPosition.y));
+    glm::vec2 cursorDelta = renderer->getCursorDelta();
+
+    if (glm::length(cursorDelta) > FLT_EPSILON) {
+        camera->rotate(cursorDelta.x * mouseSensivity, -cursorDelta.y * mouseSensivity);
     }
 
-    if (renderer->getKeyStatus(GLFW_KEY_A) == GLFW_PRESS) {
-        Logger::info("a");
-    }
-
-    if (renderer->getKeyStatus(GLFW_KEY_D) == GLFW_PRESS) {
-        Logger::info("d");
-    }
+    glm::vec3 moveVector(0.0f);
+    bool isMoved = false;
 
     if (renderer->getKeyStatus(GLFW_KEY_W) == GLFW_PRESS) {
-        Logger::info("w");
+        moveVector += camera->getFrontVector() * moveSpeed;
+        isMoved = true;
     }
 
     if (renderer->getKeyStatus(GLFW_KEY_S) == GLFW_PRESS) {
-        Logger::info("s");
+        moveVector -= camera->getFrontVector() * moveSpeed;
+        isMoved = true;
+    }
+
+    if (renderer->getKeyStatus(GLFW_KEY_D) == GLFW_PRESS) {
+        moveVector += camera->getRigthVector() * moveSpeed;
+        isMoved = true;
+    }
+
+    if (renderer->getKeyStatus(GLFW_KEY_A) == GLFW_PRESS) {
+        moveVector -= camera->getRigthVector() * moveSpeed;
+        isMoved = true;
+    }
+
+    if (isMoved) {
+        camera->move(moveVector);
     }
 
     renderer->resetCursor();

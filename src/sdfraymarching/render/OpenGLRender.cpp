@@ -8,6 +8,7 @@
 #include <sdfraymarching/render/Canvas.hpp>
 #include <sdfraymarching/render/OpenGLRenderCreatingException.hpp>
 #include <sdfraymarching/render/OpenGLRenderContext.hpp>
+#include <sdfraymarching/render/Camera.hpp>
 
 #include "OpenGLRender.hpp"
 
@@ -138,4 +139,20 @@ void OpenGLRender::display() {
 
 int OpenGLRender::getKeyStatus(int key) {
     return glfwGetKey(window, key);
+}
+
+void OpenGLRender::updateDynamicUniforms(const OpenGLRenderContext& renderContext) {
+    ShaderProgram* shaderProgram = renderContext.getShaderProgram();
+
+    glUseProgram(shaderProgram->getId());
+    glm::mat4 viewMatrix = renderContext.getCamera()->computeLookAtMatrix();
+    renderContext.getShaderProgram()->setUniform("u_view", viewMatrix);
+}
+
+void OpenGLRender::updateStaticUniforms(const OpenGLRenderContext& renderContext) {
+    ShaderProgram* shaderProgram = renderContext.getShaderProgram();
+
+    glUseProgram(shaderProgram->getId());
+    glm::mat4 projectionMatrix = renderContext.getCamera()->computeProjectionMatrix();
+    renderContext.getShaderProgram()->setUniform("u_projection", projectionMatrix);
 }

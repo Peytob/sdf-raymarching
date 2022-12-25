@@ -1,4 +1,6 @@
 #include <GL/glew.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include <sdfraymarching/render/OpenGLResourceCreatingException.hpp>
 #include <sdfraymarching/utils/Logger.hpp>
@@ -52,4 +54,14 @@ ShaderProgram::~ShaderProgram() {
 
 GLint ShaderProgram::getId() const {
     return id;
+}
+
+void ShaderProgram::setUniform(const std::string& name, const glm::mat4& data) {
+    GLint location = glGetUniformLocation(id, name.c_str());
+
+    if (location == -1) {
+        Logger::error("Uniform " + name + " not found!");
+    }
+
+    glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(data));
 }

@@ -30,6 +30,9 @@ public:
     int getKeyStatus(int key);
     void setKeyCallback(GLFWkeyfun callback);
 
+    void updateDynamicUniforms(const OpenGLRenderContext& renderContext);
+    void updateStaticUniforms(const OpenGLRenderContext& renderContext);
+
 private:
     GLFWwindow* window;
     Canvas* canvas;
