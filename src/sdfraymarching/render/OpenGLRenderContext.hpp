@@ -15,12 +15,16 @@ public:
     ShaderProgram* getShaderProgram() const;
     void setShaderProgram(ShaderProgram* shaderProgram);
 
-    void setCamera(Camera* camera);
     Camera* getCamera() const;
+    void setCamera(Camera* camera);
+
+    void setResolution(const glm::ivec2& resolution);
+    const glm::ivec2& getResolution() const;
 
 private:
     ShaderProgram* shaderProgram;
     Camera* camera;
+    glm::ivec2 resolution;
 };
 
 #endif

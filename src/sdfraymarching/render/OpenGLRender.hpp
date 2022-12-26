@@ -26,9 +26,11 @@ public:
     void close();
     bool isClosed();
 
-    glm::vec2 getCursorDelta();
+    glm::vec2 getCursorDelta() const;
     int getKeyStatus(int key);
     void setKeyCallback(GLFWkeyfun callback);
+
+    glm::ivec2 getResolution() const;
 
     void updateDynamicUniforms(const OpenGLRenderContext& renderContext);
     void updateStaticUniforms(const OpenGLRenderContext& renderContext);
@@ -36,6 +38,7 @@ public:
 private:
     GLFWwindow* window;
     Canvas* canvas;
+
     glm::vec2 defaultCursorPosition;
 };
 

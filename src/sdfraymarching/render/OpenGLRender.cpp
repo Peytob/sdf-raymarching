@@ -95,7 +95,7 @@ OpenGLRender::~OpenGLRender() {
     delete canvas;
 }
 
-glm::vec2 OpenGLRender::getCursorDelta() {
+glm::vec2 OpenGLRender::getCursorDelta() const {
     double xpos, ypos;
     glfwGetCursorPos(window, &xpos, &ypos);
     return glm::vec2(xpos, ypos) - defaultCursorPosition;
@@ -112,6 +112,12 @@ void OpenGLRender::close() {
 void OpenGLRender::setKeyCallback(GLFWkeyfun callback) {
     Logger::info("Setup window key callback");
     glfwSetKeyCallback(window, callback);
+}
+
+glm::ivec2 OpenGLRender::getResolution() const {
+    int width, height;
+    glfwGetWindowSize(window, &width, &height);
+    return { width, height };
 }
 
 void OpenGLRender::draw(const OpenGLRenderContext& renderContext) {
@@ -146,7 +152,7 @@ void OpenGLRender::updateDynamicUniforms(const OpenGLRenderContext& renderContex
 
     glUseProgram(shaderProgram->getId());
     glm::mat4 viewMatrix = renderContext.getCamera()->computeLookAtMatrix();
-    renderContext.getShaderProgram()->setUniform("u_view", viewMatrix);
+    // renderContext.getShaderProgram()->setUniform("u_view", viewMatrix);
 }
 
 void OpenGLRender::updateStaticUniforms(const OpenGLRenderContext& renderContext) {
@@ -154,5 +160,6 @@ void OpenGLRender::updateStaticUniforms(const OpenGLRenderContext& renderContext
 
     glUseProgram(shaderProgram->getId());
     glm::mat4 projectionMatrix = renderContext.getCamera()->computeProjectionMatrix();
-    renderContext.getShaderProgram()->setUniform("u_projection", projectionMatrix);
+    // renderContext.getShaderProgram()->setUniform("u_projection", projectionMatrix);
+    renderContext.getShaderProgram()->setUniform("u_resolution", renderContext.getResolution());
 }

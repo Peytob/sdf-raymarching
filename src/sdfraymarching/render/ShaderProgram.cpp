@@ -56,12 +56,22 @@ GLint ShaderProgram::getId() const {
     return id;
 }
 
-void ShaderProgram::setUniform(const std::string& name, const glm::mat4& data) {
+GLuint ShaderProgram::getUniformLocation(const std::string& name) {
     GLint location = glGetUniformLocation(id, name.c_str());
 
     if (location == -1) {
         Logger::error("Uniform " + name + " not found!");
     }
 
+    return location;
+}
+
+void ShaderProgram::setUniform(const std::string& name, const glm::mat4& data) {
+    GLint location = getUniformLocation(name);
     glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(data));
+}
+
+void ShaderProgram::setUniform(const std::string& name, const glm::ivec2& data) {
+    GLint location = getUniformLocation(name);
+    glUniform2i(location, data.x, data.y);
 }

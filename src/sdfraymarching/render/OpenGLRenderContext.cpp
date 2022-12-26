@@ -15,3 +15,11 @@ void OpenGLRenderContext::setCamera(Camera* camera) {
 Camera* OpenGLRenderContext::getCamera() const {
     return this->camera;
 }
+
+void OpenGLRenderContext::setResolution(const glm::ivec2& resolution) {
+    this->resolution = resolution;
+}
+
+const glm::ivec2& OpenGLRenderContext::getResolution() const {
+    return this->resolution;
+}

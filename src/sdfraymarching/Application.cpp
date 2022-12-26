@@ -59,6 +59,7 @@ int Application::start() {
     OpenGLRenderContext renderContext;
     renderContext.setShaderProgram(worldShaderProgram);
     renderContext.setCamera(camera);
+    renderContext.setResolution(renderer->getResolution());
 
     renderer->resetCursor();
     renderer->updateStaticUniforms(renderContext);
@@ -87,29 +88,24 @@ void Application::processControl() {
     }
 
     glm::vec3 moveVector(0.0f);
-    bool isMoved = false;
 
     if (renderer->getKeyStatus(GLFW_KEY_W) == GLFW_PRESS) {
         moveVector += camera->getFrontVector() * moveSpeed;
-        isMoved = true;
     }
 
     if (renderer->getKeyStatus(GLFW_KEY_S) == GLFW_PRESS) {
         moveVector -= camera->getFrontVector() * moveSpeed;
-        isMoved = true;
     }
 
     if (renderer->getKeyStatus(GLFW_KEY_D) == GLFW_PRESS) {
         moveVector += camera->getRigthVector() * moveSpeed;
-        isMoved = true;
     }
 
     if (renderer->getKeyStatus(GLFW_KEY_A) == GLFW_PRESS) {
         moveVector -= camera->getRigthVector() * moveSpeed;
-        isMoved = true;
     }
 
-    if (isMoved) {
+    if (glm::length(moveVector) > FLT_EPSILON) {
         camera->move(moveVector);
     }
 
