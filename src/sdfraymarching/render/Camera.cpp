@@ -65,8 +65,8 @@ void Camera::rotate(float xDif, float yDif) {
     yaw += xDif;
     pitch += yDif;
 
-    pitch = std::min(pitch, 90.0f);
-    pitch = std::max(pitch, -90.0f);
+    pitch = std::min(pitch, 89.0f);
+    pitch = std::max(pitch, -89.0f);
 }
 
 glm::mat4 Camera::computeProjectionMatrix() {
@@ -76,7 +76,7 @@ glm::mat4 Camera::computeProjectionMatrix() {
 
 glm::mat4 Camera::computeLookAtMatrix() {
     updateVectors();
-    return glm::lookAt(position, position + frontVector, upVector);
+    return glm::transpose(glm::lookAtRH(position, position + frontVector, upVector));
 }
 
 void Camera::updateVectors() {

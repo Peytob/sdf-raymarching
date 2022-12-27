@@ -75,3 +75,8 @@ void ShaderProgram::setUniform(const std::string& name, const glm::ivec2& data) 
     GLint location = getUniformLocation(name);
     glUniform2i(location, data.x, data.y);
 }
+
+void ShaderProgram::setUniform(const std::string& name, const glm::vec3& data) {
+    GLint location = getUniformLocation(name);
+    glUniform3f(location, data.x, data.y, data.z);
+}

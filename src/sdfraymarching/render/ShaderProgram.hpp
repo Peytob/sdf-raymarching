@@ -21,6 +21,7 @@ public:
 
     void setUniform(const std::string& name, const glm::mat4& data);
     void setUniform(const std::string& name, const glm::ivec2& data);
+    void setUniform(const std::string& name, const glm::vec3& data);
 
 private:
     const GLint id;

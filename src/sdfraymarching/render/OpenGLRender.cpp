@@ -151,8 +151,9 @@ void OpenGLRender::updateDynamicUniforms(const OpenGLRenderContext& renderContex
     ShaderProgram* shaderProgram = renderContext.getShaderProgram();
 
     glUseProgram(shaderProgram->getId());
-    glm::mat4 viewMatrix = renderContext.getCamera()->computeLookAtMatrix();
-    // renderContext.getShaderProgram()->setUniform("u_view", viewMatrix);
+    Camera* camera = renderContext.getCamera();
+    renderContext.getShaderProgram()->setUniform("u_view", camera->computeLookAtMatrix());
+    renderContext.getShaderProgram()->setUniform("u_cameraPosition", camera->getPosition());
 }
 
 void OpenGLRender::updateStaticUniforms(const OpenGLRenderContext& renderContext) {
