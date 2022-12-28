@@ -12,6 +12,39 @@ const float MIN_DISTANCE = 0.0;
 const float MAX_DISTANCE = 100.0;
 const float EPSILON = 0.001;
 
+/* - = - Noise - = - */
+
+float rand(vec2 co){
+    return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
+}
+/*
+ * a +---+ b
+ *   |   |
+ * c +---+ d
+ * Псевдо-рандомные высоты точек a, b, c, d на сетке и последующая
+ * интерполяция к точке f (дробная часть точки в сетке 1x1)
+*/
+float simpleNoice(vec2 point) {
+    vec2 i = floor(point);
+    vec2 f = fract(point);
+
+    float a = rand(i);
+    float b = rand(i + vec2(1.0, 0.0));
+    float c = rand(i + vec2(0.0, 1.0));
+    float d = rand(i + vec2(1.0, 1.0));
+
+    vec2 fade = smoothstep(0.0, 1.0, f);
+
+    return
+        mix(a, b, fade.x) +
+        (c - a) * fade.y * (1.0 - fade.x) +
+        (d - b) * fade.x * fade.y;
+}
+
+float noise2d(vec2 point) {
+    return simpleNoice(point);
+}
+
 /* - = - SDF - = - */
 
 struct SceneObject {
@@ -19,35 +52,48 @@ struct SceneObject {
     float distance;
 };
 
-SceneObject map(vec3 point) {
-    point = mod(point, 4.0) - 4.0 * 0.5;
-    float sphereDistance = length(point) - 1.0;
-    return SceneObject(
-        1,
-        sphereDistance);
+float terrainSdf(in vec3 point) {
+    float terraintHeight = 0;
+
+    terraintHeight = noise2d(point.xz);
+
+    return point.y - terraintHeight;
+}
+
+void map(in vec3 point, out SceneObject sceneObject) {
+    float terrain = terrainSdf(point);
+
+    sceneObject.id = 1;
+    sceneObject.distance = terrain;
 }
 
 /* - = - Ray Marching - = - */
 
+/*
+ * Возвращает true, если было пересечение с каким-либо объектом и записывает данные
+ * о пересечении в sceneObject. Возвращает false, если пересечений нет, при этом
+ * sceneObject остается неизменным.
+*/
 bool rayMarching(in vec3 rayOrigin, in vec3 rayDirection, out SceneObject sceneObject) {
-    float dist = 0.0;
+    float rayDistance = 0.0;
+    SceneObject mappedObject = SceneObject(0, 0);
 
     for (int i = 0; i < MAX_STEPS; ++i) {
-        vec3 currentPoint = rayOrigin + dist * rayDirection;
-        SceneObject mappedObject = map(currentPoint);
+        vec3 currentPoint = rayOrigin + rayDistance * rayDirection;
+        map(currentPoint, mappedObject);
 
         if (abs(mappedObject.distance) < EPSILON) {
             break;
         }
 
-        dist += mappedObject.distance;
+        rayDistance += mappedObject.distance;
 
-        if (dist > MAX_DISTANCE) {
+        if (rayDistance > MAX_DISTANCE) {
             return false;
         }
     }
 
-    sceneObject.distance = dist;
+    sceneObject.distance = rayDistance;
     return true;
 }
 
