@@ -79,7 +79,7 @@ int Application::start() {
 
 void Application::processControl() {
     const float moveSpeed = 0.25f;
-    const float mouseSensivity = 0.75f;
+    const float mouseSensivity = 0.5f;
 
     glm::vec2 cursorDelta = renderer->getCursorDelta();
 

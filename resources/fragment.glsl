@@ -12,50 +12,63 @@ const float MIN_DISTANCE = 0.0;
 const float MAX_DISTANCE = 100.0;
 const float EPSILON = 0.001;
 
+/* - = - SDF - = - */
+
 struct SceneObject {
-    float rayDistance;
+    int id;
+    float distance;
 };
+
+SceneObject map(vec3 point) {
+    point = mod(point, 4.0) - 4.0 * 0.5;
+    float sphereDistance = length(point) - 1.0;
+    return SceneObject(
+        1,
+        sphereDistance);
+}
+
+/* - = - Ray Marching - = - */
+
+bool rayMarching(in vec3 rayOrigin, in vec3 rayDirection, out SceneObject sceneObject) {
+    float dist = 0.0;
+
+    for (int i = 0; i < MAX_STEPS; ++i) {
+        vec3 currentPoint = rayOrigin + dist * rayDirection;
+        SceneObject mappedObject = map(currentPoint);
+
+        if (abs(mappedObject.distance) < EPSILON) {
+            break;
+        }
+
+        dist += mappedObject.distance;
+
+        if (dist > MAX_DISTANCE) {
+            return false;
+        }
+    }
+
+    sceneObject.distance = dist;
+    return true;
+}
 
 /*
  * Вычисление направления луча для одного пикселя.
 */
 vec3 computeRayDirection(in float fov, in vec2 resolution, in vec2 fragCoord){
-    vec2 xy = fragCoord - resolution / 2.0;
+    vec2 xy = fragCoord - resolution * 0.5;
     float z = resolution.y / tan(radians(fov) * 0.5);
     return normalize(vec3(xy, -z));
-}
-
-vec2 map(vec3 point) {
-    point = mod(point, 4.0) - 4.0 * 0.5;
-    float sphereDistance = length(point) - 1.0;
-    return vec2(sphereDistance, 1.0); // distance - id
-}
-
-float rayMarching(in vec3 rayOrigin, in vec3 rayDirection) {
-    vec2 object = vec2(0.0);
-    vec2 hit = vec2(0.0);
-
-    for (int i = 0; i < MAX_STEPS; i++) {
-        vec3 currentPoint = rayOrigin + object.x * rayDirection;
-        hit = map(currentPoint);
-        object.x += hit.x;
-        object.y = hit.y;
-        if (abs(hit.x) < EPSILON || object.x > MAX_DISTANCE) {
-            break;
-        }
-    }
-
-    return object.x;
 }
 
 void renderImage(inout vec3 pixelColor, in vec4 gl_FragCoord) {
     vec3 rayDirection = computeRayDirection(FOV, vec2(u_resolution.xy), gl_FragCoord.xy);
     vec3 viewDirection = (u_view * vec4(rayDirection, 0.0)).xyz;
 
-    float nearestObjectDistance = rayMarching(u_cameraPosition, viewDirection);
+    SceneObject nearestObject = SceneObject(0, 0.0);
+    bool isObjectHitted = rayMarching(u_cameraPosition, viewDirection, nearestObject);
 
-    if (nearestObjectDistance < MAX_DISTANCE) {
-        pixelColor += 3.0 / nearestObjectDistance;
+    if (isObjectHitted) {
+        pixelColor += 3.0 / nearestObject.distance;
     }
 }
 
