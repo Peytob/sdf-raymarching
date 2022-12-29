@@ -52,19 +52,33 @@ struct SceneObject {
     float distance;
 };
 
-float terrainSdf(in vec3 point) {
-    float terraintHeight = 0;
+float sphereSdf(in vec3 p, in float r) {
+    return length(p) - r;
+}
 
-    terraintHeight = noise2d(point.xz);
+float torusSdf(vec3 p, float smallRadius, float largeRadius) {
+	return length(vec2(length(p.xz) - largeRadius, p.y)) - smallRadius;
+}
 
-    return point.y - terraintHeight;
+float planeSdf(vec3 p, vec3 n, float distanceFromOrigin) {
+	return dot(p, n) + distanceFromOrigin;
+}
+
+float unionOp(in float a, in float b) {
+    return min(a, b);
 }
 
 void map(in vec3 point, out SceneObject sceneObject) {
-    float terrain = terrainSdf(point);
-
-    sceneObject.id = 1;
-    sceneObject.distance = terrain;
+    sceneObject.distance = unionOp(
+        torusSdf(point, 3, 5),
+        unionOp(
+            sphereSdf(point + vec3(-4, 10, 4), 3.0),
+            unionOp(
+                sphereSdf(point + vec3(4, -10, -4), 3.0),
+                planeSdf(point, vec3(0, 1, 0), 20)
+            )
+        )
+    );
 }
 
 /* - = - Ray Marching - = - */
@@ -76,7 +90,7 @@ void map(in vec3 point, out SceneObject sceneObject) {
 */
 bool rayMarching(in vec3 rayOrigin, in vec3 rayDirection, out SceneObject sceneObject) {
     float rayDistance = 0.0;
-    SceneObject mappedObject = SceneObject(0, 0);
+    SceneObject mappedObject = SceneObject(0, 0.0);
 
     for (int i = 0; i < MAX_STEPS; ++i) {
         vec3 currentPoint = rayOrigin + rayDistance * rayDirection;
@@ -114,7 +128,7 @@ void renderImage(inout vec3 pixelColor, in vec4 gl_FragCoord) {
     bool isObjectHitted = rayMarching(u_cameraPosition, viewDirection, nearestObject);
 
     if (isObjectHitted) {
-        pixelColor += 3.0 / nearestObject.distance;
+        pixelColor += 12.0 / nearestObject.distance;
     }
 }
 
