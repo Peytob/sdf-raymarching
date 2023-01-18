@@ -81,6 +81,26 @@ void map(in vec3 point, out SceneObject sceneObject) {
     );
 }
 
+SceneObject map(in vec3 point) {
+    SceneObject sceneObject;
+    map(point, sceneObject);
+    return sceneObject;
+}
+
+/* - = - Lighting - = - */
+
+struct Light {
+    vec3 color;
+    vec3 position;
+    float ambientStrength;
+};
+
+struct ObjectMaterial {
+    vec3 color;
+    vec3 specColor;
+    float shininess;
+};
+
 /* - = - Ray Marching - = - */
 
 /*
@@ -111,6 +131,17 @@ bool rayMarching(in vec3 rayOrigin, in vec3 rayDirection, out SceneObject sceneO
     return true;
 }
 
+/**
+ * Вычисляет примерную нормаль в точке, исходя из градиента вокруг нее
+*/
+vec3 estimateNormal(in vec3 point) {
+    float sceneDist = map(point).distance;
+	return normalize(vec3(
+        map(vec3(point.x + EPSILON, point.y, point.z)).distance - sceneDist,
+        map(vec3(point.x, point.y + EPSILON, point.z)).distance - sceneDist,
+        map(vec3(point.x, point.y, point.z + EPSILON)).distance - sceneDist));
+}
+
 /*
  * Вычисление направления луча для одного пикселя.
 */
@@ -121,15 +152,35 @@ vec3 computeRayDirection(in float fov, in vec2 resolution, in vec2 fragCoord){
 }
 
 void renderImage(inout vec3 pixelColor, in vec4 gl_FragCoord) {
+    vec3 eyePosition = u_cameraPosition;
     vec3 rayDirection = computeRayDirection(FOV, vec2(u_resolution.xy), gl_FragCoord.xy);
     vec3 viewDirection = (u_view * vec4(rayDirection, 0.0)).xyz;
 
     SceneObject nearestObject = SceneObject(0, 0.0);
-    bool isObjectHitted = rayMarching(u_cameraPosition, viewDirection, nearestObject);
+    bool isObjectHitted = rayMarching(eyePosition, viewDirection, nearestObject);
 
-    if (isObjectHitted) {
-        pixelColor += 12.0 / nearestObject.distance;
+    if (!isObjectHitted) {
+        return;
     }
+
+    vec3 intersectionPosition = eyePosition + nearestObject.distance * viewDirection;
+    vec3 normal = estimateNormal(intersectionPosition);
+    vec3 eyeVector = normalize(eyePosition - intersectionPosition);
+
+    Light light = Light(vec3(1, 1, 1), vec3(7, 10, 7), 0.2);
+    ObjectMaterial material = ObjectMaterial(vec3(0.5, 0.9, 0.9), vec3(1.0) * 0.5, 16.0);
+
+    /* Light computing. Should be a separate function. */
+
+    vec3 lightNormal = normalize(light.position - intersectionPosition);
+    vec3 ambient = light.ambientStrength * light.color * material.color;
+
+    float dotLN = max(0.0, dot(normal, lightNormal));
+    vec3 diffuse = dotLN * light.color * material.color;
+
+    vec3 specular = vec3(0.0);
+
+    pixelColor += ambient + diffuse + specular;
 }
 
 void main() {
