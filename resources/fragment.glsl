@@ -178,7 +178,10 @@ void renderImage(inout vec3 pixelColor, in vec4 gl_FragCoord) {
     float dotLN = max(0.0, dot(normal, lightNormal));
     vec3 diffuse = dotLN * light.color * material.color;
 
-    vec3 specular = vec3(0.0);
+    vec3 reflection = normalize(reflect(-lightNormal, normal));
+    float dotRV = max(0.0, dot(eyeVector, reflection));
+    float specularStrength = pow(dotRV, material.shininess);
+    vec3 specular = specularStrength * material.specColor * light.color;
 
     pixelColor += ambient + diffuse + specular;
 }
