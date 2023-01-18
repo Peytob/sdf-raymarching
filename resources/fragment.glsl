@@ -74,7 +74,7 @@ void map(in vec3 point, out SceneObject sceneObject) {
         unionOp(
             sphereSdf(point + vec3(-4, 10, 4), 3.0),
             unionOp(
-                sphereSdf(point + vec3(4, -10, -4), 3.0),
+                sphereSdf(point + vec3(30, 0, 4), 3.0),
                 planeSdf(point, vec3(0, 1, 0), 20)
             )
         )
@@ -131,6 +131,31 @@ bool rayMarching(in vec3 rayOrigin, in vec3 rayDirection, out SceneObject sceneO
     return true;
 }
 
+float shadowMarching(in vec3 lightPosition, in vec3 point) {
+    vec3 rayDirection = normalize(lightPosition - point);
+    vec3 rayOrigin = point;
+
+    float maxRayLength = length(lightPosition - point);
+    float rayDistance = 0.02; // Коэф. смещения для луча, чтобы не врезался в место своего старта
+
+    for (int i = 0; i < MAX_STEPS; ++i) {
+        vec3 currentPoint = point + rayDistance * rayDirection;
+        float currentNearestObjectDistance = map(currentPoint).distance;
+
+        if (currentNearestObjectDistance < EPSILON) {
+            return 0.0;
+        }
+
+        rayDistance += currentNearestObjectDistance;
+
+        if (rayDistance > maxRayLength) {
+            break;
+        }
+    }
+
+    return 1.0;
+}
+
 /**
  * Вычисляет примерную нормаль в точке, исходя из градиента вокруг нее
 */
@@ -167,7 +192,7 @@ void renderImage(inout vec3 pixelColor, in vec4 gl_FragCoord) {
     vec3 normal = estimateNormal(intersectionPosition);
     vec3 eyeVector = normalize(eyePosition - intersectionPosition);
 
-    Light light = Light(vec3(1, 1, 1), vec3(7, 10, 7), 0.2);
+    Light light = Light(vec3(1, 1, 1), vec3(-5, 10, 10), 0.2);
     ObjectMaterial material = ObjectMaterial(vec3(0.5, 0.9, 0.9), vec3(1.0) * 0.5, 16.0);
 
     /* Light computing. Should be a separate function. */
@@ -183,7 +208,9 @@ void renderImage(inout vec3 pixelColor, in vec4 gl_FragCoord) {
     float specularStrength = pow(dotRV, material.shininess);
     vec3 specular = specularStrength * material.specColor * light.color;
 
-    pixelColor += ambient + diffuse + specular;
+    float shadow = shadowMarching(light.position, intersectionPosition);
+
+    pixelColor += ambient + (diffuse + specular) * shadow;
 }
 
 void main() {
