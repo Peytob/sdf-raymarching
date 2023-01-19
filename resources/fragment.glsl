@@ -10,7 +10,7 @@ const float FOV = 90; // TODO Получать из u_view
 const int MAX_STEPS = 255;
 const float MIN_DISTANCE = 0.0;
 const float MAX_DISTANCE = 100.0;
-const float EPSILON = 0.001;
+const float EPSILON = 0.0001;
 
 /* - = - Noise - = - */
 
@@ -87,20 +87,6 @@ SceneObject map(in vec3 point) {
     return sceneObject;
 }
 
-/* - = - Lighting - = - */
-
-struct Light {
-    vec3 color;
-    vec3 position;
-    float ambientStrength;
-};
-
-struct ObjectMaterial {
-    vec3 color;
-    vec3 specColor;
-    float shininess;
-};
-
 /* - = - Ray Marching - = - */
 
 /*
@@ -176,6 +162,71 @@ vec3 computeRayDirection(in float fov, in vec2 resolution, in vec2 fragCoord){
     return normalize(vec3(xy, -z));
 }
 
+/* - = - Lighting - = - */
+
+struct LightAttenuation {
+    float constant;
+    float linear;
+    float quadratic;
+};
+
+struct Light {
+    vec3 color;
+    vec3 position;
+    float ambientStrength;
+
+    LightAttenuation attenuation;
+};
+
+struct ObjectMaterial {
+    vec3 color;
+    vec3 specColor;
+    float shininess;
+};
+
+vec3 computeLightAmbient(in Light light, in ObjectMaterial material) {
+    return light.ambientStrength * light.color * material.color;
+}
+
+vec3 computeLightDiffuse(in Light light, in ObjectMaterial material, in vec3 lightNormal, in vec3 objectNormal) {
+    float dotLN = max(0.0, dot(objectNormal, lightNormal));
+    return dotLN * light.color * material.color;
+}
+
+vec3 computeLightSpecular(in Light light, in ObjectMaterial material, in vec3 lightNormal, in vec3 objectNormal, in vec3 eyeVector) {
+    vec3 reflection = normalize(reflect(-lightNormal, objectNormal));
+    float dotRV = max(0.0, dot(eyeVector, reflection));
+    float specularStrength = pow(dotRV, material.shininess);
+    return specularStrength * material.specColor * light.color;
+}
+
+/**
+ * Вычисляет коэф. затухания света с ростом расстоияния от источника освещения по
+ * формуле затухания.
+ * Fatt = 1.0 / (Kc + Kl*d + Kq*d*d)
+ */
+float computeLightAttenuation(in Light light, in vec3 point) {
+    float distanceToLight = length(light.position - point);
+    LightAttenuation attenuation = light.attenuation;
+    return 1.0 / (attenuation.constant + attenuation.linear * distanceToLight +
+        attenuation.quadratic * (distanceToLight * distanceToLight));
+}
+
+vec3 computeLight(in Light light, in ObjectMaterial material, in vec3 point, in vec3 normal, in vec3 eyeVector) {
+    vec3 lightNormal = normalize(light.position - point);
+    float fade = computeLightAttenuation(light, point);
+
+    vec3 ambient = computeLightAmbient(light, material) * fade;
+    vec3 diffuse = computeLightDiffuse(light, material, lightNormal, normal) * fade;
+    vec3 specular = computeLightSpecular(light, material, lightNormal, normal, eyeVector) * fade;
+
+    float shadow = shadowMarching(light.position, point);
+
+    return ambient + (diffuse + specular) * shadow;
+}
+
+/* - = - Main - = - */
+
 void renderImage(inout vec3 pixelColor, in vec4 gl_FragCoord) {
     vec3 eyePosition = u_cameraPosition;
     vec3 rayDirection = computeRayDirection(FOV, vec2(u_resolution.xy), gl_FragCoord.xy);
@@ -192,25 +243,10 @@ void renderImage(inout vec3 pixelColor, in vec4 gl_FragCoord) {
     vec3 normal = estimateNormal(intersectionPosition);
     vec3 eyeVector = normalize(eyePosition - intersectionPosition);
 
-    Light light = Light(vec3(1, 1, 1), vec3(-5, 10, 10), 0.2);
+    Light light = Light(vec3(1, 1, 1), vec3(-5, 10, 10), 0.2, LightAttenuation(1.0, 0.07, 0.017));
     ObjectMaterial material = ObjectMaterial(vec3(0.5, 0.9, 0.9), vec3(1.0) * 0.5, 16.0);
 
-    /* Light computing. Should be a separate function. */
-
-    vec3 lightNormal = normalize(light.position - intersectionPosition);
-    vec3 ambient = light.ambientStrength * light.color * material.color;
-
-    float dotLN = max(0.0, dot(normal, lightNormal));
-    vec3 diffuse = dotLN * light.color * material.color;
-
-    vec3 reflection = normalize(reflect(-lightNormal, normal));
-    float dotRV = max(0.0, dot(eyeVector, reflection));
-    float specularStrength = pow(dotRV, material.shininess);
-    vec3 specular = specularStrength * material.specColor * light.color;
-
-    float shadow = shadowMarching(light.position, intersectionPosition);
-
-    pixelColor += ambient + (diffuse + specular) * shadow;
+    pixelColor += computeLight(light, material, intersectionPosition, normal, eyeVector);
 }
 
 void main() {
