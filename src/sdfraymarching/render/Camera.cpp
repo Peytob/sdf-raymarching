@@ -9,12 +9,11 @@ namespace {
     const glm::vec3 WORLD_UP_VECTOR = {0.0f, 1.0f, 0.0f};
 }
 
-Camera::Camera(const glm::vec3& position, const glm::vec3& frontVector, const float fov, const float aspect) :
+Camera::Camera(const glm::vec3& position, float yaw, float pitch, const float fov, const float aspect) :
     position(position),
-    frontVector(frontVector),
     upVector(WORLD_UP_VECTOR),
-    yaw(-90.0f),
-    pitch(0.0f),
+    yaw(yaw),
+    pitch(pitch),
     fov(fov),
     aspect(aspect) {
 

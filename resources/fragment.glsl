@@ -12,74 +12,104 @@ const float MIN_DISTANCE = 0.0;
 const float MAX_DISTANCE = 100.0;
 const float EPSILON = 0.0001;
 
-/* - = - Noise - = - */
+/* - = - Materials - = - */
 
-float rand(vec2 co){
-    return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
-}
+struct ObjectMaterial {
+    vec3 color;
+    vec3 specColor;
+    float shininess;
+};
 
-/*
- * a +---+ b
- *   |   |
- * c +---+ d
- * Псевдо-рандомные высоты точек a, b, c, d на сетке и последующая
- * интерполяция к точке f (дробная часть точки в сетке 1x1)
-*/
-float simpleNoice(vec2 point) {
-    vec2 i = floor(point);
-    vec2 f = fract(point);
-
-    float a = rand(i);
-    float b = rand(i + vec2(1.0, 0.0));
-    float c = rand(i + vec2(0.0, 1.0));
-    float d = rand(i + vec2(1.0, 1.0));
-
-    vec2 fade = smoothstep(0.0, 1.0, f);
-
-    return
-        mix(a, b, fade.x) +
-        (c - a) * fade.y * (1.0 - fade.x) +
-        (d - b) * fade.x * fade.y;
-}
-
-float noise2d(vec2 point) {
-    return simpleNoice(point);
-}
+ObjectMaterial MATERIALS[6] = ObjectMaterial[](
+    ObjectMaterial(vec3(0.5), vec3(1), 2),
+    ObjectMaterial(vec3(0, 1, 0), vec3(1), 16),
+    ObjectMaterial(vec3(0, 0, 1), vec3(1), 32),
+    ObjectMaterial(vec3(1, 1, 0), vec3(1), 2),
+    ObjectMaterial(vec3(1, 0, 1), vec3(1), 2),
+    ObjectMaterial(vec3(1, 1, 1), vec3(1), 2)
+);
 
 /* - = - SDF - = - */
 
 struct SceneObject {
-    int id;
+    int materialId;
     float distance;
 };
+
+// Источник SDF-функций https://iquilezles.org/articles/distfunctions/
 
 float sphereSdf(in vec3 p, in float r) {
     return length(p) - r;
 }
 
+float boxSdf(vec3 p, vec3 b) {
+    vec3 q = abs(p) - b;
+    return length(max(q, 0.0)) + min(max(q.x, max(q.y,q.z)), 0.0);
+}
+
 float torusSdf(vec3 p, float smallRadius, float largeRadius) {
-	return length(vec2(length(p.xz) - largeRadius, p.y)) - smallRadius;
+    return length(vec2(length(p.xz) - largeRadius, p.y)) - smallRadius;
 }
 
 float planeSdf(vec3 p, vec3 n, float distanceFromOrigin) {
-	return dot(p, n) + distanceFromOrigin;
+    return dot(p, n) + distanceFromOrigin;
 }
 
-float unionOp(in float a, in float b) {
-    return min(a, b);
+float cylinderSdf(vec3 p, float h,float r) {
+    vec2 d = abs(vec2(length(p.xz),p.y)) - vec2(r,h);
+    return min(max(d.x,d.y),0.0) + length(max(d,0.0));
+}
+
+SceneObject unionOp(in SceneObject a, in SceneObject b) {
+    return a.distance < b.distance ? a : b;
+}
+
+SceneObject intersectionOp(in SceneObject a, in SceneObject b) {
+    return a.distance < b.distance ? b : a;
+}
+
+SceneObject subtractionOp(in SceneObject a, in SceneObject b) {
+    return -a.distance < b.distance ? b : SceneObject(a.materialId, -a.distance);
 }
 
 void map(in vec3 point, out SceneObject sceneObject) {
-    sceneObject.distance = unionOp(
-        torusSdf(point, 3, 5),
-        unionOp(
-            sphereSdf(point + vec3(-4, 10, 4), 3.0),
-            unionOp(
-                sphereSdf(point + vec3(30, 0, 4), 3.0),
-                planeSdf(point, vec3(0, 1, 0), 20)
+    SceneObject ground = SceneObject(0, planeSdf(point, vec3(0, 1, 0), 2));
+    SceneObject resultScene = ground;
+
+    SceneObject sphere = SceneObject(2, sphereSdf(point, 2));
+    resultScene = unionOp(resultScene, sphere);
+
+    SceneObject torus = SceneObject(3, torusSdf(point + vec3(0, 0, 7), 0.75, 2));
+    resultScene = unionOp(resultScene, torus);
+
+    SceneObject cube = SceneObject(4, boxSdf(point + vec3(0, 0, 14), vec3(2)));
+    resultScene = unionOp(resultScene, cube);
+
+    SceneObject subtractionFigure = subtractionOp(
+        SceneObject(2, sphereSdf(point + vec3(-7, 0, 0), 2.5)),
+        SceneObject(3, boxSdf(point + vec3(-7, 0, 0), vec3(2)))
+    );
+    resultScene = unionOp(resultScene, subtractionFigure);
+
+    SceneObject intersectionFigure = intersectionOp(
+        SceneObject(1, sphereSdf(point + vec3(-7, 0, 7), 2.5)),
+        subtractionOp(
+            SceneObject(5, boxSdf(point + vec3(-7, 0, 7), vec3(10, 0.75, 0.75))),
+            subtractionOp(
+                SceneObject(5, boxSdf(point + vec3(-7, 0, 7), vec3(0.75, 10, 0.75))),
+                subtractionOp(
+                    SceneObject(5, boxSdf(point + vec3(-7, 0, 7), vec3(0.75, 0.75, 10))),
+                    SceneObject(5, boxSdf(point + vec3(-7, 0, 7), vec3(2)))
+                )
             )
         )
     );
+    resultScene = unionOp(resultScene, intersectionFigure);
+
+    SceneObject cylinder = SceneObject(1, cylinderSdf(point + vec3(-7, 0, 14), 2, 1));
+    resultScene = unionOp(resultScene, cylinder);
+
+    sceneObject = resultScene;
 }
 
 SceneObject map(in vec3 point) {
@@ -115,6 +145,8 @@ bool rayMarching(in vec3 rayOrigin, in vec3 rayDirection, out SceneObject sceneO
     }
 
     sceneObject.distance = rayDistance;
+    sceneObject.materialId = mappedObject.materialId;
+
     return true;
 }
 
@@ -183,12 +215,6 @@ struct Light {
     float ambientStrength;
 
     LightAttenuation attenuation;
-};
-
-struct ObjectMaterial {
-    vec3 color;
-    vec3 specColor;
-    float shininess;
 };
 
 Light createPointLight(in vec3 color, in vec3 position, float ambientStrength, LightAttenuation attenuation) {
@@ -271,8 +297,8 @@ void renderImage(inout vec3 pixelColor, in vec4 gl_FragCoord) {
     vec3 normal = estimateNormal(intersectionPosition);
     vec3 eyeVector = normalize(eyePosition - intersectionPosition);
 
-    Light light = createSkyLight(vec3(1, 1, 1), -vec3(0.57735, 0.57735, 0.57735), 0.2);
-    ObjectMaterial material = ObjectMaterial(vec3(0.5, 0.9, 0.9), vec3(1.0) * 0.5, 16.0);
+    Light light = createSkyLight(vec3(1), -vec3(0.57735, 0.57735, 0.57735), 0.2);
+    ObjectMaterial material = MATERIALS[nearestObject.materialId];
 
     pixelColor += computeSkyLight(light, material, intersectionPosition, normal, eyeVector);
 }
