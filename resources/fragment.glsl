@@ -17,6 +17,7 @@ const float EPSILON = 0.0001;
 float rand(vec2 co){
     return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
 }
+
 /*
  * a +---+ b
  *   |   |
@@ -117,6 +118,11 @@ bool rayMarching(in vec3 rayOrigin, in vec3 rayDirection, out SceneObject sceneO
     return true;
 }
 
+/**
+ * Облегченная версия rayMarching с небольшими дополнительными смещениями для луча.
+ * Выполняет меньше операций, относительно аналогичного вызова rayMarching и не возвращает
+ * лишних данных
+ */
 float shadowMarching(in vec3 lightPosition, in vec3 point) {
     vec3 rayDirection = normalize(lightPosition - point);
     vec3 rayOrigin = point;
@@ -173,6 +179,7 @@ struct LightAttenuation {
 struct Light {
     vec3 color;
     vec3 position;
+    vec3 direction;
     float ambientStrength;
 
     LightAttenuation attenuation;
@@ -183,6 +190,14 @@ struct ObjectMaterial {
     vec3 specColor;
     float shininess;
 };
+
+Light createPointLight(in vec3 color, in vec3 position, float ambientStrength, LightAttenuation attenuation) {
+    return Light(color, position, vec3(0), ambientStrength, attenuation);
+}
+
+Light createSkyLight(in vec3 color, in vec3 direction, float ambientStrength) {
+    return Light(color, vec3(0), direction, ambientStrength, LightAttenuation(0.0, 0.0, 0.0));
+}
 
 vec3 computeLightAmbient(in Light light, in ObjectMaterial material) {
     return light.ambientStrength * light.color * material.color;
@@ -212,7 +227,7 @@ float computeLightAttenuation(in Light light, in vec3 point) {
         attenuation.quadratic * (distanceToLight * distanceToLight));
 }
 
-vec3 computeLight(in Light light, in ObjectMaterial material, in vec3 point, in vec3 normal, in vec3 eyeVector) {
+vec3 computePointLight(in Light light, in ObjectMaterial material, in vec3 point, in vec3 normal, in vec3 eyeVector) {
     vec3 lightNormal = normalize(light.position - point);
     float fade = computeLightAttenuation(light, point);
 
@@ -221,6 +236,19 @@ vec3 computeLight(in Light light, in ObjectMaterial material, in vec3 point, in 
     vec3 specular = computeLightSpecular(light, material, lightNormal, normal, eyeVector) * fade;
 
     float shadow = shadowMarching(light.position, point);
+
+    return ambient + (diffuse + specular) * shadow;
+}
+
+vec3 computeSkyLight(in Light light, in ObjectMaterial material, in vec3 point, in vec3 normal, in vec3 eyeVector) {
+    vec3 diractionToLight = -light.direction;
+    vec3 lightNormal = normalize(diractionToLight);
+
+    vec3 ambient = computeLightAmbient(light, material);
+    vec3 diffuse = computeLightDiffuse(light, material, lightNormal, normal);
+    vec3 specular = computeLightSpecular(light, material, lightNormal, normal, eyeVector);
+
+    float shadow = shadowMarching(point + MAX_DISTANCE * diractionToLight, point);
 
     return ambient + (diffuse + specular) * shadow;
 }
@@ -243,10 +271,10 @@ void renderImage(inout vec3 pixelColor, in vec4 gl_FragCoord) {
     vec3 normal = estimateNormal(intersectionPosition);
     vec3 eyeVector = normalize(eyePosition - intersectionPosition);
 
-    Light light = Light(vec3(1, 1, 1), vec3(-5, 10, 10), 0.2, LightAttenuation(1.0, 0.07, 0.017));
+    Light light = createSkyLight(vec3(1, 1, 1), -vec3(0.57735, 0.57735, 0.57735), 0.2);
     ObjectMaterial material = ObjectMaterial(vec3(0.5, 0.9, 0.9), vec3(1.0) * 0.5, 16.0);
 
-    pixelColor += computeLight(light, material, intersectionPosition, normal, eyeVector);
+    pixelColor += computeSkyLight(light, material, intersectionPosition, normal, eyeVector);
 }
 
 void main() {
