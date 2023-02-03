@@ -1,11 +1,14 @@
 #ifndef APPLICATION_HPP
 #define APPLICATION_HPP
 
+#include <string>
+
 #pragma once
 
 class OpenGLRender;
 class ShaderProgram;
 class Camera;
+class Scene;
 
 class Application {
 public:
@@ -17,6 +20,8 @@ public:
 private:
     OpenGLRender* renderer;
     ShaderProgram* worldShaderProgram;
+    Scene* scene;
+
     Camera* camera;
 
     void processControl();

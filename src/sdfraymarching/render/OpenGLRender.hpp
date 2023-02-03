@@ -8,9 +8,10 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 
-#include <sdfraymarching/render/Canvas.hpp>
-
+class Canvas;
+class ShaderStorageBuffer;
 class OpenGLRenderContext;
+class Scene;
 
 class OpenGLRender final {
 public:
@@ -18,6 +19,7 @@ public:
     ~OpenGLRender();
 
     void resetCursor();
+    void updateSdfScene(Scene* scene);
     void draw(const OpenGLRenderContext& renderContext);
     void pullEvents();
     void clear();
@@ -38,6 +40,7 @@ public:
 private:
     GLFWwindow* window;
     Canvas* canvas;
+    ShaderStorageBuffer* sceneBuffer;
 
     glm::vec2 defaultCursorPosition;
 };

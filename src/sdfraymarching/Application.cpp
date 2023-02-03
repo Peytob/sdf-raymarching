@@ -11,6 +11,9 @@
 #include <sdfraymarching/render/ShaderProgram.hpp>
 #include <sdfraymarching/render/Camera.hpp>
 
+#include <sdfraymarching/scene/Scene.hpp>
+#include <sdfraymarching/scene/JsonSceneLoader.hpp>
+
 #include "Application.hpp"
 
 Application::Application() {
@@ -18,6 +21,7 @@ Application::Application() {
     const int windowHeigth = 600;
 
     Logger::info("Initializing raymarching demo application.");
+
     try {
         this->renderer = new OpenGLRender(windowWidth, windowHeigth, "Ray marching");
         // TODO Hide GLFW features
@@ -40,6 +44,10 @@ Application::Application() {
         std::exit(1);
     }
 
+    JsonSceneLoader jsonSceneLoader = JsonSceneLoader();
+    this->scene = jsonSceneLoader.load("");
+    renderer->updateSdfScene(scene);
+
     this->camera = new Camera(
         {0.0, 10.0, -5.0},
         -45.0,
@@ -54,6 +62,7 @@ Application::~Application() {
     delete this->renderer;
     delete this->worldShaderProgram;
     delete this->camera;
+    delete this->scene;
 }
 
 int Application::start() {

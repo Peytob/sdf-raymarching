@@ -6,9 +6,12 @@
 
 #pragma once
 
-enum FigureType {
+enum FigureType : GLint {
+    SPHERE,
+    BOX,
+    TORUS,
     PLANE,
-    SPHERE
+    CYLINDER
 };
 
 struct Sphere {
@@ -41,11 +44,18 @@ union FigureDetails {
     Torus asTorus;
     Plane asPlane;
     Cylinder asCylinder;
+    float asRawData[12];
 };
 
 struct Figure {
     FigureType type;
     FigureDetails details;
+
+    Figure() = default;
+
+    Figure(FigureType type, FigureDetails details) :
+        type(type),
+        details(details) {};
 };
 
 #endif

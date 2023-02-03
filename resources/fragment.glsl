@@ -1,4 +1,4 @@
-#version 330 core
+#version 430 core
 
 out vec4 fs_color;
 
@@ -11,6 +11,37 @@ const int MAX_STEPS = 255;
 const float MIN_DISTANCE = 0.0;
 const float MAX_DISTANCE = 100.0;
 const float EPSILON = 0.0001;
+
+/* - = - Data types - = - */
+
+struct SceneNode {
+    int left;
+    int right;
+
+    int operation;
+    vec3 localPosition;
+
+    // TODO Найти способ реализации union или его подобия в glsl!
+
+    float figureVariable1;
+    float figureVariable2;
+    float figureVariable3;
+    float figureVariable4;
+    float figureVariable5;
+    float figureVariable6;
+    float figureVariable7;
+    float figureVariable8;
+    float figureVariable9;
+    float figureVariable10;
+    float figureVariable11;
+    float figureVariable12;
+};
+
+/* - = - Buffers - = - */
+
+layout(std430, binding = 2) buffer Scene {
+    SceneNode[] nodes;
+};
 
 /* - = - Materials - = - */
 

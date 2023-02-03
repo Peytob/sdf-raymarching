@@ -7,6 +7,8 @@
 
 #pragma once
 
+// Простейшая и наивнейшая реализация нод сцены с кучей проблем.
+
 class SceneNode {
 public:
 
@@ -16,6 +18,17 @@ public:
     static SceneNode* figure(
         const Figure& figure,
         const glm::vec3& localPosition = glm::vec3(0.0));
+
+    struct Plain {
+        GLint leftChild;
+        GLint rightChild;
+
+        SceneNodeOperation operation;
+        glm::vec3 localPosition;
+
+        // Incompletable with figure static method
+        Figure figureData;
+    };
 
     ~SceneNode();
 

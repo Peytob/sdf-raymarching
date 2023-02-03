@@ -6,9 +6,13 @@
 
 #include <sdfraymarching/utils/Logger.hpp>
 #include <sdfraymarching/render/Canvas.hpp>
+#include <sdfraymarching/render/ShaderStorageBuffer.hpp>
 #include <sdfraymarching/render/OpenGLRenderCreatingException.hpp>
 #include <sdfraymarching/render/OpenGLRenderContext.hpp>
 #include <sdfraymarching/render/Camera.hpp>
+#include <sdfraymarching/render/ShaderStorageBuffer.hpp>
+
+#include <sdfraymarching/scene/Scene.hpp>
 
 #include "OpenGLRender.hpp"
 
@@ -26,7 +30,7 @@ void initializeGlfw() {
 }
 
 GLFWwindow* createWindow(int width, int height, const std::string& title) {
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
@@ -79,6 +83,7 @@ OpenGLRender::OpenGLRender(int width, int height, const std::string& title) :
     Logger::info("GLEW library initialized.");
 
     canvas = new Canvas();
+    sceneBuffer = new ShaderStorageBuffer(2);
 }
 
 OpenGLRender::~OpenGLRender() {
@@ -93,6 +98,7 @@ OpenGLRender::~OpenGLRender() {
     Logger::info("GLFW library terminated.");
 
     delete canvas;
+    delete sceneBuffer;
 }
 
 glm::vec2 OpenGLRender::getCursorDelta() const {
@@ -118,6 +124,16 @@ glm::ivec2 OpenGLRender::getResolution() const {
     int width, height;
     glfwGetWindowSize(window, &width, &height);
     return { width, height };
+}
+
+void OpenGLRender::updateSdfScene(Scene* scene) {
+    SceneNode::Plain plainData[] = {
+        {-1, -1, LEAF, {0, 0, 0}, Figure { SPHERE, { 1.0 } }}
+    };
+
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, sceneBuffer->getId());
+    sceneBuffer->writeData(sizeof(plainData), &plainData, GL_STATIC_DRAW);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
 void OpenGLRender::draw(const OpenGLRenderContext& renderContext) {
@@ -160,7 +176,5 @@ void OpenGLRender::updateStaticUniforms(const OpenGLRenderContext& renderContext
     ShaderProgram* shaderProgram = renderContext.getShaderProgram();
 
     glUseProgram(shaderProgram->getId());
-    glm::mat4 projectionMatrix = renderContext.getCamera()->computeProjectionMatrix();
-    // renderContext.getShaderProgram()->setUniform("u_projection", projectionMatrix);
     renderContext.getShaderProgram()->setUniform("u_resolution", renderContext.getResolution());
 }
