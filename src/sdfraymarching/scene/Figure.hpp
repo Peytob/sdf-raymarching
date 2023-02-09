@@ -7,11 +7,11 @@
 #pragma once
 
 enum FigureType : GLint {
-    SPHERE,
-    BOX,
-    TORUS,
-    PLANE,
-    CYLINDER
+    SPHERE = 1,
+    BOX = 2,
+    TORUS = 3,
+    PLANE = 4,
+    CYLINDER = 5,
 };
 
 struct Sphere {

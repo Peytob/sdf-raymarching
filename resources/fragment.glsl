@@ -14,12 +14,29 @@ const float EPSILON = 0.0001;
 
 /* - = - Data types - = - */
 
+const int FIGURE_SPHERE = 1;
+const int FIGURE_BOX = 2;
+const int FIGURE_TORUS = 3;
+const int FIGURE_PLANE = 4;
+const int FIGURE_CYLINDER = 5;
+
+const int OPERATION_LEAF = 0;
+const int OPERATION_SUBSTRACTION = 1;
+const int OPERATION_MERGE = 2;
+const int OPERATION_INTERSECTION = 3;
+
 struct SceneNode {
     int left;
     int right;
 
     int operation;
-    vec3 localPosition;
+
+    // Костыль из-за выравнивания vec3 до vec4
+    float localPositionX;
+    float localPositionY;
+    float localPositionZ;
+
+    int figureType;
 
     // TODO Найти способ реализации union или его подобия в glsl!
 
@@ -103,44 +120,25 @@ SceneObject subtractionOp(in SceneObject a, in SceneObject b) {
     return -a.distance < b.distance ? b : SceneObject(a.materialId, -a.distance);
 }
 
+float processLeafSceneNode(in vec3 point, int nodeIndex) {
+    if (FIGURE_SPHERE == nodes[nodeIndex].figureType) {
+        return sphereSdf(point, nodes[nodeIndex].figureVariable1);
+    } else {
+        return MAX_DISTANCE;
+    }
+}
+
+float processSceneNode(in vec3 point, int nodeIndex) {
+    if (OPERATION_LEAF == nodes[nodeIndex].operation) {
+        return processLeafSceneNode(point, nodeIndex);
+    } else {
+        return MAX_DISTANCE;
+    }
+}
+
 void map(in vec3 point, out SceneObject sceneObject) {
-    SceneObject ground = SceneObject(0, planeSdf(point, vec3(0, 1, 0), 2));
-    SceneObject resultScene = ground;
-
-    SceneObject sphere = SceneObject(2, sphereSdf(point, 2));
-    resultScene = unionOp(resultScene, sphere);
-
-    SceneObject torus = SceneObject(3, torusSdf(point + vec3(0, 0, 7), 0.75, 2));
-    resultScene = unionOp(resultScene, torus);
-
-    SceneObject cube = SceneObject(4, boxSdf(point + vec3(0, 0, 14), vec3(2)));
-    resultScene = unionOp(resultScene, cube);
-
-    SceneObject subtractionFigure = subtractionOp(
-        SceneObject(2, sphereSdf(point + vec3(-7, 0, 0), 2.5)),
-        SceneObject(3, boxSdf(point + vec3(-7, 0, 0), vec3(2)))
-    );
-    resultScene = unionOp(resultScene, subtractionFigure);
-
-    SceneObject intersectionFigure = intersectionOp(
-        SceneObject(1, sphereSdf(point + vec3(-7, 0, 7), 2.5)),
-        subtractionOp(
-            SceneObject(5, boxSdf(point + vec3(-7, 0, 7), vec3(10, 0.75, 0.75))),
-            subtractionOp(
-                SceneObject(5, boxSdf(point + vec3(-7, 0, 7), vec3(0.75, 10, 0.75))),
-                subtractionOp(
-                    SceneObject(5, boxSdf(point + vec3(-7, 0, 7), vec3(0.75, 0.75, 10))),
-                    SceneObject(5, boxSdf(point + vec3(-7, 0, 7), vec3(2)))
-                )
-            )
-        )
-    );
-    resultScene = unionOp(resultScene, intersectionFigure);
-
-    SceneObject cylinder = SceneObject(1, cylinderSdf(point + vec3(-7, 0, 14), 2, 1));
-    resultScene = unionOp(resultScene, cylinder);
-
-    sceneObject = resultScene;
+    sceneObject.distance = processSceneNode(point, 0);
+    sceneObject.materialId = 2;
 }
 
 SceneObject map(in vec3 point) {
