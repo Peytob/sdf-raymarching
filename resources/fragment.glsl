@@ -20,10 +20,31 @@ const int FIGURE_TORUS = 3;
 const int FIGURE_PLANE = 4;
 const int FIGURE_CYLINDER = 5;
 
+const int NULL_NODE_INDEX = -1;
 const int OPERATION_LEAF = 0;
 const int OPERATION_SUBSTRACTION = 1;
 const int OPERATION_MERGE = 2;
 const int OPERATION_INTERSECTION = 3;
+
+/* - = - Scene node data - = - */
+
+const int WALKING_TREE_STACK_MAX_SIZE = 256;
+int WALKING_TREE_STACK_CURRENT_SIZE = 0;
+int WALKING_TREE_STACK[WALKING_TREE_STACK_MAX_SIZE];
+
+const int COMPUTING_TREE_STACK_MAX_SIZE = 8; // Вероятно, можно спокойно поставить максимальный размер в 2 или 4.
+int COMPUTING_TREE_STACK_CURRENT_SIZE = 0;
+float COMPUTING_TREE_STACK[COMPUTING_TREE_STACK_MAX_SIZE];
+
+#define pushWalkingSceneStack(data) WALKING_TREE_STACK[WALKING_TREE_STACK_CURRENT_SIZE++] = data
+#define popWalkingSceneStack() WALKING_TREE_STACK[--WALKING_TREE_STACK_CURRENT_SIZE]
+#define peekWalkingSceneStack() WALKING_TREE_STACK[WALKING_TREE_STACK_CURRENT_SIZE - 1]
+#define isWalkingSceneStackEmpty() (WALKING_TREE_STACK_CURRENT_SIZE == 0)
+
+#define pushComputingSceneStack(data) COMPUTING_TREE_STACK[COMPUTING_TREE_STACK_CURRENT_SIZE++] = data
+#define popComputingSceneStack() COMPUTING_TREE_STACK[--COMPUTING_TREE_STACK_CURRENT_SIZE]
+#define peekComputingSceneStack() COMPUTING_TREE_STACK[COMPUTING_TREE_STACK_CURRENT_SIZE - 1]
+#define isComputingSceneStackEmpty() (COMPUTING_TREE_STACK_CURRENT_SIZE == 0)
 
 struct SceneNode {
     int left;
@@ -120,6 +141,8 @@ SceneObject subtractionOp(in SceneObject a, in SceneObject b) {
     return -a.distance < b.distance ? b : SceneObject(a.materialId, -a.distance);
 }
 
+/* - = - Scene processing - = - */
+
 float processLeafSceneNode(in vec3 point, int nodeIndex) {
     if (FIGURE_SPHERE == nodes[nodeIndex].figureType) {
         return sphereSdf(point, nodes[nodeIndex].figureVariable1);
@@ -136,8 +159,37 @@ float processSceneNode(in vec3 point, int nodeIndex) {
     }
 }
 
+float processSceneTree(in vec3 point, int rootIndex) {
+    int node = rootIndex;
+
+    while (node != NULL_NODE_INDEX || !isWalkingSceneStackEmpty()) {
+        if (!isWalkingSceneStackEmpty()) {
+            node = popWalkingSceneStack();
+
+            if (!isWalkingSceneStackEmpty() && nodes[node].right == peekWalkingSceneStack()) {
+                node = popWalkingSceneStack();
+            } else {
+                pushComputingSceneStack(processSceneNode(point, node));
+                node = NULL_NODE_INDEX;
+            }
+        }
+
+        while (node != NULL_NODE_INDEX) {
+            pushWalkingSceneStack(node);
+            if (nodes[node].right != NULL_NODE_INDEX) {
+                pushWalkingSceneStack(nodes[node].right);
+                pushWalkingSceneStack(node);
+            }
+
+            node = nodes[node].left;
+        }
+    }
+
+    return popComputingSceneStack();
+}
+
 void map(in vec3 point, out SceneObject sceneObject) {
-    sceneObject.distance = processSceneNode(point, 0);
+    sceneObject.distance = processSceneTree(point, 0);
     sceneObject.materialId = 2;
 }
 
