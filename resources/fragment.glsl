@@ -129,7 +129,7 @@ float cylinderSdf(vec3 p, float h,float r) {
     return min(max(d.x,d.y),0.0) + length(max(d,0.0));
 }
 
-SceneObject unionOp(in SceneObject a, in SceneObject b) {
+SceneObject mergeOp(in SceneObject a, in SceneObject b) {
     return a.distance < b.distance ? a : b;
 }
 
@@ -144,19 +144,71 @@ SceneObject subtractionOp(in SceneObject a, in SceneObject b) {
 /* - = - Scene processing - = - */
 
 float processLeafSceneNode(in vec3 point, int nodeIndex) {
-    if (FIGURE_SPHERE == nodes[nodeIndex].figureType) {
+    int figureType = nodes[nodeIndex].figureType;
+
+    if (FIGURE_SPHERE == figureType) {
+        float radius = nodes[nodeIndex].figureVariable1;
         return sphereSdf(point, nodes[nodeIndex].figureVariable1);
-    } else {
-        return MAX_DISTANCE;
     }
+
+    if (FIGURE_BOX == figureType) {
+        float xSize = nodes[nodeIndex].figureVariable1;
+        float ySize = nodes[nodeIndex].figureVariable2;
+        float zSize = nodes[nodeIndex].figureVariable3;
+
+        return boxSdf(point, vec3(xSize, ySize, zSize));
+    }
+
+    if (FIGURE_TORUS == figureType) {
+        float smallRadius = nodes[nodeIndex].figureVariable1;
+        float largeRadius = nodes[nodeIndex].figureVariable2;
+
+        return torusSdf(point, smallRadius, largeRadius);
+    }
+
+    if (FIGURE_PLANE == figureType) {
+        float xNormal = nodes[nodeIndex].figureVariable4;
+        float yNormal = nodes[nodeIndex].figureVariable5;
+        float zNormal = nodes[nodeIndex].figureVariable6;
+
+        float distanceFromOrigin = nodes[nodeIndex].figureVariable7;
+
+        return planeSdf(point, vec3(xNormal, yNormal, zNormal), distanceFromOrigin);
+    }
+
+    if (FIGURE_CYLINDER == figureType) {
+        float radius = nodes[nodeIndex].figureVariable1;
+        float height = nodes[nodeIndex].figureVariable2;
+
+        return cylinderSdf(point, height, radius);
+    }
+
+    return MAX_DISTANCE;
 }
 
 float processSceneNode(in vec3 point, int nodeIndex) {
-    if (OPERATION_LEAF == nodes[nodeIndex].operation) {
+    int nodeOperation = nodes[nodeIndex].operation;
+
+    if (OPERATION_LEAF == nodeOperation) {
         return processLeafSceneNode(point, nodeIndex);
-    } else {
-        return MAX_DISTANCE;
     }
+
+    float left = popComputingSceneStack();
+    float right = popComputingSceneStack();
+
+    if (OPERATION_SUBSTRACTION == nodeOperation) {
+        return subtractionOp(SceneObject(1, left), SceneObject(2, right)).distance;
+    }
+
+    if (OPERATION_MERGE == nodeOperation) {
+        return mergeOp(SceneObject(1, left), SceneObject(2, right)).distance;
+    }
+
+    if (OPERATION_INTERSECTION == nodeOperation) {
+        return intersectionOp(SceneObject(1, left), SceneObject(2, right)).distance;
+    }
+
+    return MAX_DISTANCE;
 }
 
 float processSceneTree(in vec3 point, int rootIndex) {
@@ -169,7 +221,8 @@ float processSceneTree(in vec3 point, int rootIndex) {
             if (!isWalkingSceneStackEmpty() && nodes[node].right == peekWalkingSceneStack()) {
                 node = popWalkingSceneStack();
             } else {
-                pushComputingSceneStack(processSceneNode(point, node));
+                float nodeDistance = processSceneNode(point, node);
+                pushComputingSceneStack(nodeDistance);
                 node = NULL_NODE_INDEX;
             }
         }

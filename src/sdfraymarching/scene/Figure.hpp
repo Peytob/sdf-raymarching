@@ -28,7 +28,6 @@ struct Torus {
 };
 
 struct Plane {
-    glm::vec3 position;
     glm::vec3 normal;
     float distanceFromOrigin;
 };
@@ -39,7 +38,7 @@ struct Cylinder {
 };
 
 union FigureDetails {
-    Sphere asSpehere;
+    Sphere asSphere;
     Box asBox;
     Torus asTorus;
     Plane asPlane;

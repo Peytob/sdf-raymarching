@@ -127,8 +127,17 @@ glm::ivec2 OpenGLRender::getResolution() const {
 }
 
 void OpenGLRender::updateSdfScene(Scene* scene) {
+    FigureDetails box;
+    box.asBox.sizes = glm::vec3(1, 1, 2);
+
+    FigureDetails torus;
+    torus.asTorus.smallRadius = 1;
+    torus.asTorus.largeRadius = 2;
+
     SceneNode::Plain plainData[] = {
-        {-1, -1, LEAF, {0, 0, 0}, Figure { SPHERE, { 1.0 } }}
+        {1, 2, SUBSTRACTION, {0, 0, 0}},
+        {-1, -1, LEAF, {0, 0, 0}, Figure(BOX, box)},
+        {-1, -1, LEAF, {0, 0, 0}, Figure(TORUS, torus)}
     };
 
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, sceneBuffer->getId());
