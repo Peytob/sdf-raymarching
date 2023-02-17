@@ -167,11 +167,11 @@ float processLeafSceneNode(in vec3 point, int nodeIndex) {
     }
 
     if (FIGURE_PLANE == figureType) {
-        float xNormal = nodes[nodeIndex].figureVariable4;
-        float yNormal = nodes[nodeIndex].figureVariable5;
-        float zNormal = nodes[nodeIndex].figureVariable6;
+        float xNormal = nodes[nodeIndex].figureVariable1;
+        float yNormal = nodes[nodeIndex].figureVariable2;
+        float zNormal = nodes[nodeIndex].figureVariable3;
 
-        float distanceFromOrigin = nodes[nodeIndex].figureVariable7;
+        float distanceFromOrigin = nodes[nodeIndex].figureVariable4;
 
         return planeSdf(point, vec3(xNormal, yNormal, zNormal), distanceFromOrigin);
     }
