@@ -136,8 +136,8 @@ void OpenGLRender::updateSdfScene(Scene* scene) {
 
     SceneNode::Plain plainData[] = {
         {1, 2, SUBSTRACTION, {0, 0, 0}},
-        {-1, -1, LEAF, {0, 0, 0}, Figure(BOX, box)},
-        {-1, -1, LEAF, {0, 0, 0}, Figure(TORUS, torus)}
+        {-1, -1, LEAF, {0, 0, 0}, 0, Figure(BOX, box)},
+        {-1, -1, LEAF, {0, 0, 0}, 1, Figure(TORUS, torus)}
     };
 
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, sceneBuffer->getId());

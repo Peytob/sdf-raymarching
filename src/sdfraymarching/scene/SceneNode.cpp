@@ -64,3 +64,11 @@ const Figure& SceneNode::getFigure() {
 const SceneNodeOperation& SceneNode::getOperation() {
     return operation;
 }
+
+const std::string& SceneNode::getMaterialId() {
+    return this->materialId;
+}
+
+void SceneNode::setMaterialId(const std::string& materialId) {
+    this->materialId = materialId;
+}

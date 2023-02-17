@@ -1,7 +1,10 @@
 #ifndef SCENETREE_HPP
 #define SCENETREE_HPP
 
+#include <string>
+
 #include <glm/vec3.hpp>
+
 #include <sdfraymarching/scene/SceneNodeOperation.hpp>
 #include <sdfraymarching/scene/Figure.hpp>
 
@@ -25,6 +28,7 @@ public:
 
         SceneNodeOperation operation;
         glm::vec3 localPosition;
+        GLint materialId;
 
         // Incompletable with figure static method
         Figure figureData;
@@ -44,6 +48,9 @@ public:
     const Figure& getFigure();
     const SceneNodeOperation& getOperation();
 
+    const std::string& getMaterialId();
+    void setMaterialId(const std::string& materialId);
+
 private:
     SceneNode(SceneNodeOperation operation, const glm::vec3 localPosition, const Figure& figure);
     SceneNode(const SceneNode& node) {}
@@ -53,6 +60,8 @@ private:
 
     SceneNodeOperation operation;
     glm::vec3 localPosition;
+
+    std::string materialId;
 
     // Incompletable with figure static method
     Figure figureData;

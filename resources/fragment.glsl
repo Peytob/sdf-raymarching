@@ -12,6 +12,9 @@ const float MIN_DISTANCE = 0.0;
 const float MAX_DISTANCE = 100.0;
 const float EPSILON = 0.0001;
 
+const int COMPUTING_TREE_STACK_MAX_SIZE = 16; // Вероятно, можно спокойно поставить максимальный размер в 2 или 4.
+const int WALKING_TREE_STACK_MAX_SIZE = 256;
+
 /* - = - Data types - = - */
 
 const int FIGURE_SPHERE = 1;
@@ -28,24 +31,6 @@ const int OPERATION_INTERSECTION = 3;
 
 /* - = - Scene node data - = - */
 
-const int WALKING_TREE_STACK_MAX_SIZE = 256;
-int WALKING_TREE_STACK_CURRENT_SIZE = 0;
-int WALKING_TREE_STACK[WALKING_TREE_STACK_MAX_SIZE];
-
-const int COMPUTING_TREE_STACK_MAX_SIZE = 8; // Вероятно, можно спокойно поставить максимальный размер в 2 или 4.
-int COMPUTING_TREE_STACK_CURRENT_SIZE = 0;
-float COMPUTING_TREE_STACK[COMPUTING_TREE_STACK_MAX_SIZE];
-
-#define pushWalkingSceneStack(data) WALKING_TREE_STACK[WALKING_TREE_STACK_CURRENT_SIZE++] = data
-#define popWalkingSceneStack() WALKING_TREE_STACK[--WALKING_TREE_STACK_CURRENT_SIZE]
-#define peekWalkingSceneStack() WALKING_TREE_STACK[WALKING_TREE_STACK_CURRENT_SIZE - 1]
-#define isWalkingSceneStackEmpty() (WALKING_TREE_STACK_CURRENT_SIZE == 0)
-
-#define pushComputingSceneStack(data) COMPUTING_TREE_STACK[COMPUTING_TREE_STACK_CURRENT_SIZE++] = data
-#define popComputingSceneStack() COMPUTING_TREE_STACK[--COMPUTING_TREE_STACK_CURRENT_SIZE]
-#define peekComputingSceneStack() COMPUTING_TREE_STACK[COMPUTING_TREE_STACK_CURRENT_SIZE - 1]
-#define isComputingSceneStackEmpty() (COMPUTING_TREE_STACK_CURRENT_SIZE == 0)
-
 struct SceneNode {
     int left;
     int right;
@@ -57,6 +42,7 @@ struct SceneNode {
     float localPositionY;
     float localPositionZ;
 
+    int materialId;
     int figureType;
 
     // TODO Найти способ реализации union или его подобия в glsl!
@@ -105,6 +91,24 @@ struct SceneObject {
     float distance;
 };
 
+/* Stack util */
+
+int WALKING_TREE_STACK_CURRENT_SIZE = 0;
+int WALKING_TREE_STACK[WALKING_TREE_STACK_MAX_SIZE];
+
+int COMPUTING_TREE_STACK_CURRENT_SIZE = 0;
+SceneObject COMPUTING_TREE_STACK[COMPUTING_TREE_STACK_MAX_SIZE];
+
+#define pushWalkingSceneStack(data) WALKING_TREE_STACK[WALKING_TREE_STACK_CURRENT_SIZE++] = data
+#define popWalkingSceneStack() WALKING_TREE_STACK[--WALKING_TREE_STACK_CURRENT_SIZE]
+#define peekWalkingSceneStack() WALKING_TREE_STACK[WALKING_TREE_STACK_CURRENT_SIZE - 1]
+#define isWalkingSceneStackEmpty() (WALKING_TREE_STACK_CURRENT_SIZE == 0)
+
+#define pushComputingSceneStack(data) COMPUTING_TREE_STACK[COMPUTING_TREE_STACK_CURRENT_SIZE++] = data
+#define popComputingSceneStack() COMPUTING_TREE_STACK[--COMPUTING_TREE_STACK_CURRENT_SIZE]
+#define peekComputingSceneStack() COMPUTING_TREE_STACK[COMPUTING_TREE_STACK_CURRENT_SIZE - 1]
+#define isComputingSceneStackEmpty() (COMPUTING_TREE_STACK_CURRENT_SIZE == 0)
+
 // Источник SDF-функций https://iquilezles.org/articles/distfunctions/
 
 float sphereSdf(in vec3 p, in float r) {
@@ -143,7 +147,7 @@ SceneObject subtractionOp(in SceneObject a, in SceneObject b) {
 
 /* - = - Scene processing - = - */
 
-float processLeafSceneNode(in vec3 point, int nodeIndex) {
+float processLeafSceneNodeDistance(in vec3 point, int nodeIndex) {
     int figureType = nodes[nodeIndex].figureType;
 
     if (FIGURE_SPHERE == figureType) {
@@ -186,32 +190,37 @@ float processLeafSceneNode(in vec3 point, int nodeIndex) {
     return MAX_DISTANCE;
 }
 
-float processSceneNode(in vec3 point, int nodeIndex) {
+SceneObject processLeafSceneNode(in vec3 point, int nodeIndex) {
+    float nodeDistance = processLeafSceneNodeDistance(point, nodeIndex);
+    return SceneObject(nodes[nodeIndex].materialId, nodeDistance);
+}
+
+SceneObject processSceneNode(in vec3 point, int nodeIndex) {
     int nodeOperation = nodes[nodeIndex].operation;
 
     if (OPERATION_LEAF == nodeOperation) {
         return processLeafSceneNode(point, nodeIndex);
     }
 
-    float left = popComputingSceneStack();
-    float right = popComputingSceneStack();
+    SceneObject left = popComputingSceneStack();
+    SceneObject right = popComputingSceneStack();
 
     if (OPERATION_SUBSTRACTION == nodeOperation) {
-        return subtractionOp(SceneObject(1, left), SceneObject(2, right)).distance;
+        return subtractionOp(left, right);
     }
 
     if (OPERATION_MERGE == nodeOperation) {
-        return mergeOp(SceneObject(1, left), SceneObject(2, right)).distance;
+        return mergeOp(left, right);
     }
 
     if (OPERATION_INTERSECTION == nodeOperation) {
-        return intersectionOp(SceneObject(1, left), SceneObject(2, right)).distance;
+        return intersectionOp(left, right);
     }
 
-    return MAX_DISTANCE;
+    return SceneObject(0, MAX_DISTANCE);
 }
 
-float processSceneTree(in vec3 point, int rootIndex) {
+SceneObject processSceneTree(in vec3 point, int rootIndex) {
     int node = rootIndex;
 
     while (node != NULL_NODE_INDEX || !isWalkingSceneStackEmpty()) {
@@ -221,7 +230,7 @@ float processSceneTree(in vec3 point, int rootIndex) {
             if (!isWalkingSceneStackEmpty() && nodes[node].right == peekWalkingSceneStack()) {
                 node = popWalkingSceneStack();
             } else {
-                float nodeDistance = processSceneNode(point, node);
+                SceneObject nodeDistance = processSceneNode(point, node);
                 pushComputingSceneStack(nodeDistance);
                 node = NULL_NODE_INDEX;
             }
@@ -242,8 +251,7 @@ float processSceneTree(in vec3 point, int rootIndex) {
 }
 
 void map(in vec3 point, out SceneObject sceneObject) {
-    sceneObject.distance = processSceneTree(point, 0);
-    sceneObject.materialId = 2;
+    sceneObject = processSceneTree(point, 0);
 }
 
 SceneObject map(in vec3 point) {
