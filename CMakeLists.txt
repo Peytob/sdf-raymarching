@@ -9,6 +9,11 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # - - - Libraries - - -
 
+# - Nlohmann JSON
+
+find_package(nlohmann_json REQUIRED)
+link_libraries(nlohmann_json::nlohmann_json)
+
 # - OGL
 
 find_package(OpenGL REQUIRED COMPONENTS OpenGL)

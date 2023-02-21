@@ -13,10 +13,10 @@ SceneNode* SceneNode::intersection() {
 }
 
 SceneNode* SceneNode::figure(const Figure& figure, const glm::vec3& localPosition) {
-    return new SceneNode(SceneNodeOperation::LEAF, glm::vec3(), Figure());
+    return new SceneNode(SceneNodeOperation::LEAF, localPosition, Figure());
 }
 
-SceneNode::SceneNode(SceneNodeOperation operation, const glm::vec3 localPosition, const Figure& figure) :
+SceneNode::SceneNode(SceneNodeOperation operation, const glm::vec3& localPosition, const Figure& figure) :
     leftChild(nullptr),
     rightChild(nullptr),
     operation(operation),

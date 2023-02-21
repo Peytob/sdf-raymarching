@@ -10,6 +10,8 @@
 #include <sdfraymarching/render/OpenGLRender.hpp>
 #include <sdfraymarching/render/ShaderProgram.hpp>
 #include <sdfraymarching/render/Camera.hpp>
+#include <sdfraymarching/utils/FileUtils.hpp>
+#include <sdfraymarching/scene/SceneLoadException.hpp>
 
 #include <sdfraymarching/scene/Scene.hpp>
 #include <sdfraymarching/scene/JsonSceneLoader.hpp>
@@ -44,9 +46,14 @@ Application::Application() {
         std::exit(1);
     }
 
-    JsonSceneLoader jsonSceneLoader = JsonSceneLoader();
-    this->scene = jsonSceneLoader.load("");
-    renderer->updateSdfScene(scene);
+    try {
+        JsonSceneLoader jsonSceneLoader = JsonSceneLoader();
+        this->scene = jsonSceneLoader.load(FileUtils::readFile("./resources/example_scene.json"));
+        renderer->updateSdfScene(scene);
+    } catch (const SceneLoadException& e) {
+        Logger::error("Error while loading or parsing scene. Description: " + std::string(e.what()));
+        std::exit(1);
+    }
 
     this->camera = new Camera(
         {0.0, 10.0, -5.0},

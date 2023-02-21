@@ -52,7 +52,7 @@ public:
     void setMaterialId(const std::string& materialId);
 
 private:
-    SceneNode(SceneNodeOperation operation, const glm::vec3 localPosition, const Figure& figure);
+    SceneNode(SceneNodeOperation operation, const glm::vec3& localPosition, const Figure& figure);
     SceneNode(const SceneNode& node) {}
 
     SceneNode* leftChild;

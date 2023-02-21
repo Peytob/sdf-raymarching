@@ -111,7 +111,7 @@ SceneObject COMPUTING_TREE_STACK[COMPUTING_TREE_STACK_MAX_SIZE];
 
 // Источник SDF-функций https://iquilezles.org/articles/distfunctions/
 
-float sphereSdf(in vec3 p, in float r) {
+float sphereSdf(vec3 p, float r) {
     return length(p) - r;
 }
 
@@ -133,21 +133,21 @@ float cylinderSdf(vec3 p, float h,float r) {
     return min(max(d.x,d.y),0.0) + length(max(d,0.0));
 }
 
-SceneObject mergeOp(in SceneObject a, in SceneObject b) {
+SceneObject mergeOp(SceneObject a, SceneObject b) {
     return a.distance < b.distance ? a : b;
 }
 
-SceneObject intersectionOp(in SceneObject a, in SceneObject b) {
+SceneObject intersectionOp(SceneObject a, SceneObject b) {
     return a.distance < b.distance ? b : a;
 }
 
-SceneObject subtractionOp(in SceneObject a, in SceneObject b) {
+SceneObject subtractionOp(SceneObject a, SceneObject b) {
     return -a.distance < b.distance ? b : SceneObject(a.materialId, -a.distance);
 }
 
 /* - = - Scene processing - = - */
 
-float processLeafSceneNodeDistance(in vec3 point, int nodeIndex) {
+float processLeafSceneNodeDistance(vec3 point, int nodeIndex) {
     int figureType = nodes[nodeIndex].figureType;
 
     if (FIGURE_SPHERE == figureType) {
@@ -155,7 +155,7 @@ float processLeafSceneNodeDistance(in vec3 point, int nodeIndex) {
         return sphereSdf(point, nodes[nodeIndex].figureVariable1);
     }
 
-    if (FIGURE_BOX == figureType) {
+    else if (FIGURE_BOX == figureType) {
         float xSize = nodes[nodeIndex].figureVariable1;
         float ySize = nodes[nodeIndex].figureVariable2;
         float zSize = nodes[nodeIndex].figureVariable3;
@@ -163,14 +163,14 @@ float processLeafSceneNodeDistance(in vec3 point, int nodeIndex) {
         return boxSdf(point, vec3(xSize, ySize, zSize));
     }
 
-    if (FIGURE_TORUS == figureType) {
+    else if (FIGURE_TORUS == figureType) {
         float smallRadius = nodes[nodeIndex].figureVariable1;
         float largeRadius = nodes[nodeIndex].figureVariable2;
 
         return torusSdf(point, smallRadius, largeRadius);
     }
 
-    if (FIGURE_PLANE == figureType) {
+    else if (FIGURE_PLANE == figureType) {
         float xNormal = nodes[nodeIndex].figureVariable1;
         float yNormal = nodes[nodeIndex].figureVariable2;
         float zNormal = nodes[nodeIndex].figureVariable3;
@@ -180,7 +180,7 @@ float processLeafSceneNodeDistance(in vec3 point, int nodeIndex) {
         return planeSdf(point, vec3(xNormal, yNormal, zNormal), distanceFromOrigin);
     }
 
-    if (FIGURE_CYLINDER == figureType) {
+    else if (FIGURE_CYLINDER == figureType) {
         float radius = nodes[nodeIndex].figureVariable1;
         float height = nodes[nodeIndex].figureVariable2;
 
@@ -190,12 +190,12 @@ float processLeafSceneNodeDistance(in vec3 point, int nodeIndex) {
     return MAX_DISTANCE;
 }
 
-SceneObject processLeafSceneNode(in vec3 point, int nodeIndex) {
+SceneObject processLeafSceneNode(vec3 point, int nodeIndex) {
     float nodeDistance = processLeafSceneNodeDistance(point, nodeIndex);
     return SceneObject(nodes[nodeIndex].materialId, nodeDistance);
 }
 
-SceneObject processSceneNode(in vec3 point, int nodeIndex) {
+SceneObject processSceneNode(vec3 point, int nodeIndex) {
     int nodeOperation = nodes[nodeIndex].operation;
 
     if (OPERATION_LEAF == nodeOperation) {
@@ -209,18 +209,18 @@ SceneObject processSceneNode(in vec3 point, int nodeIndex) {
         return subtractionOp(left, right);
     }
 
-    if (OPERATION_MERGE == nodeOperation) {
+    else if (OPERATION_MERGE == nodeOperation) {
         return mergeOp(left, right);
     }
 
-    if (OPERATION_INTERSECTION == nodeOperation) {
+    else if (OPERATION_INTERSECTION == nodeOperation) {
         return intersectionOp(left, right);
     }
 
     return SceneObject(0, MAX_DISTANCE);
 }
 
-SceneObject processSceneTree(in vec3 point, int rootIndex) {
+SceneObject processSceneTree(vec3 point, int rootIndex) {
     int node = rootIndex;
 
     while (node != NULL_NODE_INDEX || !isWalkingSceneStackEmpty()) {
@@ -250,11 +250,11 @@ SceneObject processSceneTree(in vec3 point, int rootIndex) {
     return popComputingSceneStack();
 }
 
-void map(in vec3 point, out SceneObject sceneObject) {
+void map(vec3 point, out SceneObject sceneObject) {
     sceneObject = processSceneTree(point, 0);
 }
 
-SceneObject map(in vec3 point) {
+SceneObject map(vec3 point) {
     SceneObject sceneObject;
     map(point, sceneObject);
     return sceneObject;
@@ -267,7 +267,7 @@ SceneObject map(in vec3 point) {
  * о пересечении в sceneObject. Возвращает false, если пересечений нет, при этом
  * sceneObject остается неизменным.
 */
-bool rayMarching(in vec3 rayOrigin, in vec3 rayDirection, out SceneObject sceneObject) {
+bool rayMarching(vec3 rayOrigin, vec3 rayDirection, out SceneObject sceneObject) {
     float rayDistance = 0.0;
     SceneObject mappedObject = SceneObject(0, 0.0);
 
@@ -297,7 +297,7 @@ bool rayMarching(in vec3 rayOrigin, in vec3 rayDirection, out SceneObject sceneO
  * Выполняет меньше операций, относительно аналогичного вызова rayMarching и не возвращает
  * лишних данных
  */
-float shadowMarching(in vec3 lightPosition, in vec3 point) {
+float shadowMarching(vec3 lightPosition, vec3 point) {
     vec3 rayDirection = normalize(lightPosition - point);
     vec3 rayOrigin = point;
 
@@ -325,7 +325,7 @@ float shadowMarching(in vec3 lightPosition, in vec3 point) {
 /**
  * Вычисляет примерную нормаль в точке, исходя из градиента вокруг нее
 */
-vec3 estimateNormal(in vec3 point) {
+vec3 estimateNormal(vec3 point) {
     float sceneDist = map(point).distance;
 	return normalize(vec3(
         map(vec3(point.x + EPSILON, point.y, point.z)).distance - sceneDist,
@@ -336,7 +336,7 @@ vec3 estimateNormal(in vec3 point) {
 /*
  * Вычисление направления луча для одного пикселя.
 */
-vec3 computeRayDirection(in float fov, in vec2 resolution, in vec2 fragCoord){
+vec3 computeRayDirection(float fov, vec2 resolution, vec2 fragCoord){
     vec2 xy = fragCoord - resolution * 0.5;
     float z = resolution.y / tan(radians(fov) * 0.5);
     return normalize(vec3(xy, -z));
@@ -359,24 +359,24 @@ struct Light {
     LightAttenuation attenuation;
 };
 
-Light createPointLight(in vec3 color, in vec3 position, float ambientStrength, LightAttenuation attenuation) {
+Light createPointLight(vec3 color, vec3 position, float ambientStrength, LightAttenuation attenuation) {
     return Light(color, position, vec3(0), ambientStrength, attenuation);
 }
 
-Light createSkyLight(in vec3 color, in vec3 direction, float ambientStrength) {
+Light createSkyLight(vec3 color, vec3 direction, float ambientStrength) {
     return Light(color, vec3(0), direction, ambientStrength, LightAttenuation(0.0, 0.0, 0.0));
 }
 
-vec3 computeLightAmbient(in Light light, in ObjectMaterial material) {
+vec3 computeLightAmbient(Light light, ObjectMaterial material) {
     return light.ambientStrength * light.color * material.color;
 }
 
-vec3 computeLightDiffuse(in Light light, in ObjectMaterial material, in vec3 lightNormal, in vec3 objectNormal) {
+vec3 computeLightDiffuse(Light light, ObjectMaterial material, vec3 lightNormal, vec3 objectNormal) {
     float dotLN = max(0.0, dot(objectNormal, lightNormal));
     return dotLN * light.color * material.color;
 }
 
-vec3 computeLightSpecular(in Light light, in ObjectMaterial material, in vec3 lightNormal, in vec3 objectNormal, in vec3 eyeVector) {
+vec3 computeLightSpecular(Light light, ObjectMaterial material, vec3 lightNormal, vec3 objectNormal, vec3 eyeVector) {
     vec3 reflection = normalize(reflect(-lightNormal, objectNormal));
     float dotRV = max(0.0, dot(eyeVector, reflection));
     float specularStrength = pow(dotRV, material.shininess);
@@ -388,14 +388,14 @@ vec3 computeLightSpecular(in Light light, in ObjectMaterial material, in vec3 li
  * формуле затухания.
  * Fatt = 1.0 / (Kc + Kl*d + Kq*d*d)
  */
-float computeLightAttenuation(in Light light, in vec3 point) {
+float computeLightAttenuation(Light light, vec3 point) {
     float distanceToLight = length(light.position - point);
     LightAttenuation attenuation = light.attenuation;
     return 1.0 / (attenuation.constant + attenuation.linear * distanceToLight +
         attenuation.quadratic * (distanceToLight * distanceToLight));
 }
 
-vec3 computePointLight(in Light light, in ObjectMaterial material, in vec3 point, in vec3 normal, in vec3 eyeVector) {
+vec3 computePointLight(Light light, ObjectMaterial material, vec3 point, vec3 normal, vec3 eyeVector) {
     vec3 lightNormal = normalize(light.position - point);
     float fade = computeLightAttenuation(light, point);
 
@@ -408,7 +408,7 @@ vec3 computePointLight(in Light light, in ObjectMaterial material, in vec3 point
     return ambient + (diffuse + specular) * shadow;
 }
 
-vec3 computeSkyLight(in Light light, in ObjectMaterial material, in vec3 point, in vec3 normal, in vec3 eyeVector) {
+vec3 computeSkyLight(Light light, ObjectMaterial material, vec3 point, vec3 normal, vec3 eyeVector) {
     vec3 diractionToLight = -light.direction;
     vec3 lightNormal = normalize(diractionToLight);
 
@@ -423,7 +423,7 @@ vec3 computeSkyLight(in Light light, in ObjectMaterial material, in vec3 point, 
 
 /* - = - Main - = - */
 
-void renderImage(inout vec3 pixelColor, in vec4 gl_FragCoord) {
+void renderImage(inout vec3 pixelColor, vec4 gl_FragCoord) {
     vec3 eyePosition = u_cameraPosition;
     vec3 rayDirection = computeRayDirection(FOV, vec2(u_resolution.xy), gl_FragCoord.xy);
     vec3 viewDirection = (u_view * vec4(rayDirection, 0.0)).xyz;

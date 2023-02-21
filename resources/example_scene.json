@@ -1,0 +1,9 @@
+{
+    "scene": {
+        "operation": "leaf",
+        "figure": {
+            "type": "sphere",
+            "radius": 1.0
+        }
+    }
+}
