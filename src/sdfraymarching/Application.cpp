@@ -21,6 +21,7 @@
 Application::Application() {
     const int windowWidth = 800;
     const int windowHeigth = 600;
+    const std::string sceneFile = "./resources/example_scene.json";
 
     Logger::info("Initializing raymarching demo application.");
 
@@ -48,7 +49,7 @@ Application::Application() {
 
     try {
         JsonSceneLoader jsonSceneLoader = JsonSceneLoader();
-        this->scene = jsonSceneLoader.load(FileUtils::readFile("./resources/example_scene.json"));
+        this->scene = jsonSceneLoader.load(FileUtils::readFile(sceneFile));
         renderer->updateSdfScene(scene);
     } catch (const SceneLoadException& e) {
         Logger::error("Error while loading or parsing scene. Description: " + std::string(e.what()));

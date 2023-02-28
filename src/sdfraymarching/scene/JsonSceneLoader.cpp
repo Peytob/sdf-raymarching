@@ -7,17 +7,6 @@
 
 namespace {
 
-const std::string SCENE_ROOT_OBJECT = "scene";
-
-const std::string OPERATION_FIELD = "operation";
-const std::string LEAF_OPERATION_OBJECT = "leaf";
-const std::string MERGE_OPERATION_OBJECT = "merge";
-
-const std::string LEFT_OPERAND_OBJECT = "left";
-const std::string RIGHT_OPERAND_OBJECT = "right";
-
-const std::string FIGURE_OBJECT = "figure";
-
 glm::vec3 parseVec3(const nlohmann::json& vecNode) {
     return glm::vec3(
         vecNode["x"].get<float>(),
@@ -55,19 +44,35 @@ Figure parseFigure(const nlohmann::json& figureNode) {
     return figure;
 }
 
-SceneNode* parseSceneNode(const nlohmann::json& jsonNode) {
-    const std::string operation = jsonNode[OPERATION_FIELD].get<std::string>();
+SceneNode* createOperationNode(const std::string& operation) {
+    if (operation == "merge") {
+        return SceneNode::merge();
+    } else if (operation == "substraction") {
+        return SceneNode::substraction();
+    } else if (operation == "intersection") {
+        return SceneNode::intersection();
+    }
 
-    if (operation == LEAF_OPERATION_OBJECT) {
-        Figure figure = parseFigure(jsonNode[FIGURE_OBJECT]);
+    throw SceneLoadException("Operation with type " + operation + " not exists");
+    return nullptr; // TODO Just mock to suppress warning.
+}
+
+SceneNode* parseSceneNode(const nlohmann::json& jsonNode) {
+    const std::string operation = jsonNode["operation"].get<std::string>();
+
+    if (operation == "leaf") {
+        Figure figure = parseFigure(jsonNode["figure"]);
         return SceneNode::figure(figure);
     }
 
-    SceneNode* leftNode = parseSceneNode(jsonNode[LEFT_OPERAND_OBJECT]);
-    SceneNode* rightNode = parseSceneNode(jsonNode[RIGHT_OPERAND_OBJECT]);
+    SceneNode* leftNode = parseSceneNode(jsonNode["left"]);
+    SceneNode* rightNode = parseSceneNode(jsonNode["right"]);
+    SceneNode* operationNode = createOperationNode(operation);
 
-    throw SceneLoadException("Operation with type " + operation + " not exists");
-    return nullptr; // TODO Just mock.
+    operationNode->setLeftChild(leftNode);
+    operationNode->setRightChild(rightNode);
+
+    return operationNode;
 }
 
 } // namespace
