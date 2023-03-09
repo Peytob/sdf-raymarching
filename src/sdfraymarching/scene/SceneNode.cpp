@@ -13,7 +13,7 @@ SceneNode* SceneNode::intersection() {
 }
 
 SceneNode* SceneNode::figure(const Figure& figure, const glm::vec3& localPosition) {
-    return new SceneNode(SceneNodeOperation::LEAF, localPosition, Figure());
+    return new SceneNode(SceneNodeOperation::LEAF, localPosition, figure);
 }
 
 SceneNode::SceneNode(SceneNodeOperation operation, const glm::vec3& localPosition, const Figure& figure) :
@@ -53,19 +53,19 @@ void SceneNode::setLocalPosition(const glm::vec3& position) {
     this->localPosition = position;
 }
 
-const glm::vec3& SceneNode::getLocalPosition() {
+const glm::vec3& SceneNode::getLocalPosition() const {
     return localPosition;
 }
 
-const Figure& SceneNode::getFigure() {
+const Figure& SceneNode::getFigure() const {
     return figureData;
 }
 
-const SceneNodeOperation& SceneNode::getOperation() {
+const SceneNodeOperation& SceneNode::getOperation() const {
     return operation;
 }
 
-const std::string& SceneNode::getMaterialId() {
+const std::string& SceneNode::getMaterialId() const {
     return this->materialId;
 }
 

@@ -43,12 +43,12 @@ public:
     void setRightChild(SceneNode* node);
 
     void setLocalPosition(const glm::vec3& position);
-    const glm::vec3& getLocalPosition();
+    const glm::vec3& getLocalPosition() const;
 
-    const Figure& getFigure();
-    const SceneNodeOperation& getOperation();
+    const Figure& getFigure() const;
+    const SceneNodeOperation& getOperation() const;
 
-    const std::string& getMaterialId();
+    const std::string& getMaterialId() const;
     void setMaterialId(const std::string& materialId);
 
 private:

@@ -41,18 +41,21 @@ Application::Application() {
     }
 
     try {
-        this->worldShaderProgram = ShaderProgram::loadShaderProgram("./resources/vertex.glsl", "./resources/fragment.glsl");
-    } catch (const OpenGLResourceCreatingException& e) {
-        Logger::error("Error while loading world shader program. Description: " + std::string(e.what()));
+        JsonSceneLoader jsonSceneLoader = JsonSceneLoader();
+        Logger::info("Loading scene JSON from file " + sceneFile);
+        this->scene = jsonSceneLoader.load(FileUtils::readFile(sceneFile));
+    } catch (const SceneLoadException& e) {
+        Logger::error("Error while loading or parsing scene. Description: " + std::string(e.what()));
         std::exit(1);
     }
 
     try {
-        JsonSceneLoader jsonSceneLoader = JsonSceneLoader();
-        this->scene = jsonSceneLoader.load(FileUtils::readFile(sceneFile));
+        Logger::info("Loading shader program");
+        this->worldShaderProgram = ShaderProgram::loadShaderProgram("./resources/vertex.glsl", "./resources/fragment.glsl");
+        glUseProgram(worldShaderProgram->getId());
         renderer->updateSdfScene(scene);
-    } catch (const SceneLoadException& e) {
-        Logger::error("Error while loading or parsing scene. Description: " + std::string(e.what()));
+    } catch (const OpenGLResourceCreatingException& e) {
+        Logger::error("Error while loading world shader program. Description: " + std::string(e.what()));
         std::exit(1);
     }
 

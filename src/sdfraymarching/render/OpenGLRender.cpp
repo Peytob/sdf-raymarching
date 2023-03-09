@@ -11,6 +11,7 @@
 #include <sdfraymarching/render/OpenGLRenderContext.hpp>
 #include <sdfraymarching/render/Camera.hpp>
 #include <sdfraymarching/render/ShaderStorageBuffer.hpp>
+#include <sdfraymarching/scene/SceneToPlainConverter.hpp>
 
 #include <sdfraymarching/scene/Scene.hpp>
 
@@ -82,8 +83,8 @@ OpenGLRender::OpenGLRender(int width, int height, const std::string& title) :
     initializeGlew();
     Logger::info("GLEW library initialized.");
 
-    canvas = new Canvas();
-    sceneBuffer = new ShaderStorageBuffer(2);
+    this->canvas = new Canvas();
+    this->sceneBuffer = new ShaderStorageBuffer(2);
 }
 
 OpenGLRender::~OpenGLRender() {
@@ -127,21 +128,13 @@ glm::ivec2 OpenGLRender::getResolution() const {
 }
 
 void OpenGLRender::updateSdfScene(Scene* scene) {
-    FigureDetails box;
-    box.asBox.sizes = glm::vec3(1, 1, 2);
+    Logger::info("Updating SDF scene");
 
-    FigureDetails torus;
-    torus.asTorus.smallRadius = 1;
-    torus.asTorus.largeRadius = 2;
-
-    SceneNode::Plain plainData[] = {
-        {1, 2, SUBSTRACTION, {0, 0, 0}},
-        {-1, -1, LEAF, {0, 0, 0}, 0, Figure(BOX, box)},
-        {-1, -1, LEAF, {0, 0, 0}, 1, Figure(TORUS, torus)}
-    };
+    SceneToPlainConverter converter;
+    PlainScene plainScene = converter.toPlainData(scene);
 
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, sceneBuffer->getId());
-    sceneBuffer->writeData(sizeof(plainData), &plainData, GL_STATIC_DRAW);
+    sceneBuffer->writeData(sizeof(SceneNode::Plain) * plainScene.nodes.size(), static_cast<void*>(plainScene.nodes.data()), GL_STATIC_DRAW);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 

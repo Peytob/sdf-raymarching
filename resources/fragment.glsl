@@ -14,6 +14,7 @@ const float EPSILON = 0.0001;
 
 const int COMPUTING_TREE_STACK_MAX_SIZE = 16; // Вероятно, можно спокойно поставить максимальный размер в 2 или 4.
 const int WALKING_TREE_STACK_MAX_SIZE = 256;
+const int WALKING_TREE_MAX_DEPTH = 24; // Защита от зацикливания при неверном вводе
 
 /* - = - Data types - = - */
 
@@ -222,8 +223,9 @@ SceneObject processSceneNode(vec3 point, int nodeIndex) {
 
 SceneObject processSceneTree(vec3 point, int rootIndex) {
     int node = rootIndex;
+    int outerWhileDepth = 0;
 
-    while (node != NULL_NODE_INDEX || !isWalkingSceneStackEmpty()) {
+    while (outerWhileDepth < WALKING_TREE_MAX_DEPTH && node != NULL_NODE_INDEX || !isWalkingSceneStackEmpty()) {
         if (!isWalkingSceneStackEmpty()) {
             node = popWalkingSceneStack();
 
@@ -236,7 +238,9 @@ SceneObject processSceneTree(vec3 point, int rootIndex) {
             }
         }
 
-        while (node != NULL_NODE_INDEX) {
+        int innerWhileDepth = 0;
+
+        while (innerWhileDepth < WALKING_TREE_MAX_DEPTH && node != NULL_NODE_INDEX) {
             pushWalkingSceneStack(node);
             if (nodes[node].right != NULL_NODE_INDEX) {
                 pushWalkingSceneStack(nodes[node].right);
@@ -244,7 +248,10 @@ SceneObject processSceneTree(vec3 point, int rootIndex) {
             }
 
             node = nodes[node].left;
+            innerWhileDepth++;
         }
+
+        outerWhileDepth++;
     }
 
     return popComputingSceneStack();

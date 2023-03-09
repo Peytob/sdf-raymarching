@@ -1,5 +1,6 @@
 #include <sdfraymarching/scene/Scene.hpp>
 #include <sdfraymarching/scene/SceneLoadException.hpp>
+#include <sdfraymarching/utils/Logger.hpp>
 
 #include <nlohmann/json.hpp>
 
@@ -78,6 +79,7 @@ SceneNode* parseSceneNode(const nlohmann::json& jsonNode) {
 } // namespace
 
 Scene* JsonSceneLoader::load(const std::string& jsonString) {
+    Logger::info("Parsing scene JSON");
     const nlohmann::json sceneJson = nlohmann::json::parse(jsonString);
     SceneNode* root = parseSceneNode(sceneJson["scene"]);
     return new Scene(root);

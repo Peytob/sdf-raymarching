@@ -1,9 +1,21 @@
 {
     "scene": {
-        "operation": "leaf",
-        "figure": {
-            "type": "sphere",
-            "radius": 1.0
+        "operation": "merge",
+        "left": {
+            "operation": "leaf",
+            "figure": {
+                "type": "sphere",
+                "radius": 1.0
+            }
+        },
+
+        "right": {
+            "operation": "leaf",
+            "figure": {
+                "type": "cylinder",
+                "radius": 0.5,
+                "height": 2.0
+            }
         }
     }
 }
