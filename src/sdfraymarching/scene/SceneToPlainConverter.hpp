@@ -6,8 +6,7 @@
 #include <sdfraymarching/scene/Scene.hpp>
 #include <sdfraymarching/scene/PlainScene.hpp>
 
-class SceneToPlainConverter
-{
+class SceneToPlainConverter {
 public:
     SceneToPlainConverter() = default;
     ~SceneToPlainConverter() = default;

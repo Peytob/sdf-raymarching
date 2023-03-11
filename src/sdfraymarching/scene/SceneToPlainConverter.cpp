@@ -19,11 +19,13 @@ int SceneToPlainConverter::processNode(SceneNode* node) {
         return NULL_NODE_INDEX;
     }
 
-    plainScene.nodes.push_back(SceneNode::Plain());
+    plainScene.nodes.emplace_back();
     int index = plainScene.nodes.size() - 1;
 
-    plainScene.nodes[index].leftChild = processNode(node->getLeftChild());
-    plainScene.nodes[index].rightChild = processNode(node->getRightChild());
+    auto leftChildIndex = processNode(node->getLeftChild());
+    plainScene.nodes[index].leftChild = leftChildIndex;
+    auto rightChildIndex = processNode(node->getRightChild());
+    plainScene.nodes[index].rightChild = rightChildIndex;
     plainScene.nodes[index].operation = node->getOperation();
     plainScene.nodes[index].localPosition = node->getLocalPosition();
     plainScene.nodes[index].materialId = 3; // TODO Mock
