@@ -17,7 +17,7 @@ private:
     PlainScene plainScene;
 
     void reset();
-    int processNode(SceneNode* node);
+    GLint processNode(SceneNode* node, glm::vec3 localPosition);
 };
 
 #endif
