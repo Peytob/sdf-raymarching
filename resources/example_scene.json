@@ -3,6 +3,8 @@
         "operation": "merge",
         "left": {
             "operation": "leaf",
+            "localPosition": [1.0, 2.0, 3.0],
+            "materialId": "b",
             "figure": {
                 "type": "sphere",
                 "radius": 1.0
@@ -11,6 +13,7 @@
 
         "right": {
             "operation": "leaf",
+            "materialId": "a",
             "figure": {
                 "type": "cylinder",
                 "radius": 0.5,
@@ -22,20 +25,16 @@
     "material": [
         {
             "id": "a",
-            "color": {
-                "r": 1.0,
-                "g": 0.5,
-                "b": 0.4
-            }
+            "color": [1.0, 0.5, 0.4],
+            "specColor": [1.0, 1.0, 1.0],
+            "shininess": 8.0
         },
 
         {
             "id": "b",
-            "color": {
-                "r": 0.3,
-                "g": 0.7,
-                "b": 0.1
-            }
+            "color": [0.3, 0.7, 0.1],
+            "specColor": [1.0, 1.0, 1.0],
+            "shininess": 16.0
         }
     ]
 }

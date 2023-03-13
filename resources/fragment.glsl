@@ -62,28 +62,23 @@ struct SceneNode {
     float figureVariable12;
 };
 
-/* - = - Buffers - = - */
-
-layout(std430, binding = 2) buffer Scene {
-    SceneNode[] nodes;
-};
-
 /* - = - Materials - = - */
 
 struct ObjectMaterial {
-    vec3 color;
-    vec3 specColor;
+    vec4 color;
+    vec4 specColor;
     float shininess;
 };
 
-ObjectMaterial MATERIALS[6] = ObjectMaterial[](
-    ObjectMaterial(vec3(0.5), vec3(1), 2),
-    ObjectMaterial(vec3(0, 1, 0), vec3(1), 16),
-    ObjectMaterial(vec3(0, 0, 1), vec3(1), 32),
-    ObjectMaterial(vec3(1, 1, 0), vec3(1), 2),
-    ObjectMaterial(vec3(1, 0, 1), vec3(1), 2),
-    ObjectMaterial(vec3(1, 1, 1), vec3(1), 2)
-);
+/* - = - Buffers - = - */
+
+layout(std430, binding = 1) buffer Scene {
+    SceneNode[] nodes;
+};
+
+layout(std430, binding = 2) buffer Materials {
+    ObjectMaterial[] materials;
+};
 
 /* - = - SDF - = - */
 
@@ -375,19 +370,19 @@ Light createSkyLight(vec3 color, vec3 direction, float ambientStrength) {
 }
 
 vec3 computeLightAmbient(Light light, ObjectMaterial material) {
-    return light.ambientStrength * light.color * material.color;
+    return light.ambientStrength * light.color * material.color.xyz;
 }
 
 vec3 computeLightDiffuse(Light light, ObjectMaterial material, vec3 lightNormal, vec3 objectNormal) {
     float dotLN = max(0.0, dot(objectNormal, lightNormal));
-    return dotLN * light.color * material.color;
+    return dotLN * light.color * material.color.xyz;
 }
 
 vec3 computeLightSpecular(Light light, ObjectMaterial material, vec3 lightNormal, vec3 objectNormal, vec3 eyeVector) {
     vec3 reflection = normalize(reflect(-lightNormal, objectNormal));
     float dotRV = max(0.0, dot(eyeVector, reflection));
     float specularStrength = pow(dotRV, material.shininess);
-    return specularStrength * material.specColor * light.color;
+    return specularStrength * material.specColor.xyz * light.color;
 }
 
 /**
@@ -439,6 +434,7 @@ void renderImage(inout vec3 pixelColor, vec4 gl_FragCoord) {
     bool isObjectHitted = rayMarching(eyePosition, viewDirection, nearestObject);
 
     if (!isObjectHitted) {
+        pixelColor += vec3(0.1, 0.1, 0.1);
         return;
     }
 
@@ -447,7 +443,7 @@ void renderImage(inout vec3 pixelColor, vec4 gl_FragCoord) {
     vec3 eyeVector = normalize(eyePosition - intersectionPosition);
 
     Light light = createSkyLight(vec3(1), -vec3(0.57735, 0.57735, 0.57735), 0.2);
-    ObjectMaterial material = MATERIALS[nearestObject.materialId];
+    ObjectMaterial material = materials[nearestObject.materialId];
 
     pixelColor += computeSkyLight(light, material, intersectionPosition, normal, eyeVector);
 }

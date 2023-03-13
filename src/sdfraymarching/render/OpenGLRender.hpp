@@ -41,6 +41,7 @@ private:
     GLFWwindow* window;
     Canvas* canvas;
     ShaderStorageBuffer* sceneBuffer;
+    ShaderStorageBuffer* materialBuffer;
 
     glm::vec2 defaultCursorPosition;
 };

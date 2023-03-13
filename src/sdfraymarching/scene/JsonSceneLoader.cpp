@@ -10,17 +10,9 @@ namespace {
 
 glm::vec3 parseVec3(const nlohmann::json& vecNode) {
     return {
-        vecNode.at("x").get<float>(),
-        vecNode.at("y").get<float>(),
-        vecNode.at("z").get<float>()
-    };
-}
-
-glm::vec3 parseColorVec3(const nlohmann::json& vecNode) {
-    return {
-        vecNode.at("r").get<float>(),
-        vecNode.at("g").get<float>(),
-        vecNode.at("b").get<float>()
+        vecNode.at(0).get<float>(),
+        vecNode.at(1).get<float>(),
+        vecNode.at(2).get<float>()
     };
 }
 
@@ -75,7 +67,10 @@ SceneNode* parseSceneNode(const nlohmann::json& jsonNode) {
 
     if (operation == "leaf") {
         Figure figure = parseFigure(jsonNode.at("figure"));
-        return SceneNode::figure(figure, localPosition);
+        std::string materialId = jsonNode.at("materialId");
+        SceneNode* node = SceneNode::figure(figure, localPosition);
+        node->setMaterialId(materialId);
+        return node;
     }
 
     SceneNode* leftNode = parseSceneNode(jsonNode.at("left"));
@@ -90,20 +85,18 @@ SceneNode* parseSceneNode(const nlohmann::json& jsonNode) {
     return operationNode;
 }
 
-std::vector<Material> parseMaterials(const nlohmann::json& jsonNode) {
-    std::vector<Material> materials;
+Material parseMaterial(const nlohmann::json& materialNode) {
+    std::string id = materialNode.at("id").get<std::string>();
+    glm::vec3 color = parseVec3(materialNode.at("color"));
+    glm::vec3 specColor = parseVec3(materialNode.at("specColor"));
+    float shininess = materialNode.at("shininess").get<float>();
 
-    for (const auto& materialNode : jsonNode) {
-        std::string id = materialNode.at("id").get<std::string>();
-        glm::vec3 color = parseColorVec3(materialNode.at("color"));
+    Material material(id);
+    material.setColor(color);
+    material.setSpecColor(specColor);
+    material.setShininess(shininess);
 
-        Material material(id);
-        material.setColor(color);
-
-        materials.push_back(material);
-    }
-
-    return materials;
+    return material;
 }
 
 } // namespace
@@ -111,10 +104,13 @@ std::vector<Material> parseMaterials(const nlohmann::json& jsonNode) {
 Scene* JsonSceneLoader::load(const std::string& jsonString) {
     Logger::info("Parsing scene JSON");
     const nlohmann::json sceneJson = nlohmann::json::parse(jsonString);
+
     SceneNode* root = parseSceneNode(sceneJson.at("scene"));
     Scene* scene = new Scene(root);
-    for (const auto& material : parseMaterials(sceneJson.at("material"))) {
-        scene->addMaterial(material);
+
+    for (const auto& materialNode : sceneJson.at("material")) {
+        scene->addMaterial(parseMaterial(materialNode));
     }
+
     return new Scene(root);
 }

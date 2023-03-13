@@ -8,13 +8,13 @@
 
 class SceneLoadException : std::exception {
 public:
-    SceneLoadException(const std::string& message);
+    SceneLoadException(const std::string& message) :
+        message(message) { }
 
     const char* what() const _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_NOTHROW override;
 
 private:
     const std::string message;
-
 };
 
 #endif

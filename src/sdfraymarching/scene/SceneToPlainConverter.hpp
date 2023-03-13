@@ -15,9 +15,11 @@ public:
 
 private:
     PlainScene plainScene;
+    std::map<std::string, size_t> materialIdsIndexes;
 
     void reset();
     GLint processNode(SceneNode* node, glm::vec3 localPosition);
+    void processMaterials(const std::vector<Material>& materials);
 };
 
 #endif

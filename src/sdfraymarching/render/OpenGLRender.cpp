@@ -84,7 +84,8 @@ OpenGLRender::OpenGLRender(int width, int height, const std::string& title) :
     Logger::info("GLEW library initialized.");
 
     this->canvas = new Canvas();
-    this->sceneBuffer = new ShaderStorageBuffer(2);
+    this->sceneBuffer = new ShaderStorageBuffer(1);
+    this->materialBuffer = new ShaderStorageBuffer(2);
 }
 
 OpenGLRender::~OpenGLRender() {
@@ -100,6 +101,7 @@ OpenGLRender::~OpenGLRender() {
 
     delete canvas;
     delete sceneBuffer;
+    delete materialBuffer;
 }
 
 glm::vec2 OpenGLRender::getCursorDelta() const {
@@ -135,6 +137,10 @@ void OpenGLRender::updateSdfScene(Scene* scene) {
 
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, sceneBuffer->getId());
     sceneBuffer->writeData(sizeof(SceneNode::Plain) * plainScene.nodes.size(), static_cast<void*>(plainScene.nodes.data()), GL_STATIC_DRAW);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, materialBuffer->getId());
+    materialBuffer->writeData(sizeof(Material::Plain) * plainScene.materials.size(), static_cast<void*>(plainScene.materials.data()), GL_STATIC_DRAW);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
