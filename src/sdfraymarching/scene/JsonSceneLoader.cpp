@@ -16,6 +16,14 @@ glm::vec3 parseVec3(const nlohmann::json& vecNode) {
     };
 }
 
+glm::vec3 parseColorVec3(const nlohmann::json& vecNode) {
+    return {
+        vecNode.at("r").get<float>(),
+        vecNode.at("g").get<float>(),
+        vecNode.at("b").get<float>()
+    };
+}
+
 Figure parseFigure(const nlohmann::json& figureNode) {
     const std::string figureType = figureNode.at("type").get<std::string>();
     Figure figure;
@@ -82,11 +90,31 @@ SceneNode* parseSceneNode(const nlohmann::json& jsonNode) {
     return operationNode;
 }
 
+std::vector<Material> parseMaterials(const nlohmann::json& jsonNode) {
+    std::vector<Material> materials;
+
+    for (const auto& materialNode : jsonNode) {
+        std::string id = materialNode.at("id").get<std::string>();
+        glm::vec3 color = parseColorVec3(materialNode.at("color"));
+
+        Material material(id);
+        material.setColor(color);
+
+        materials.push_back(material);
+    }
+
+    return materials;
+}
+
 } // namespace
 
 Scene* JsonSceneLoader::load(const std::string& jsonString) {
     Logger::info("Parsing scene JSON");
     const nlohmann::json sceneJson = nlohmann::json::parse(jsonString);
     SceneNode* root = parseSceneNode(sceneJson.at("scene"));
+    Scene* scene = new Scene(root);
+    for (const auto& material : parseMaterials(sceneJson.at("material"))) {
+        scene->addMaterial(material);
+    }
     return new Scene(root);
 }
