@@ -30,7 +30,7 @@ GLint SceneToPlainConverter::processNode(SceneNode* node, glm::vec3 localPositio
     if (node->getOperation() == LEAF) {
         plainScene.nodes[index].localPosition = plainNodeLocalPosition;
 
-        if (materialIdsIndexes.find(node->getMaterialId()) != materialIdsIndexes.end()) {
+        if (materialIdsIndexes.find(node->getMaterialId()) == materialIdsIndexes.end()) {
             throw SceneConvertionException("Material with id " + node->getMaterialId() + " not found!");
         } else {
             plainScene.nodes[index].materialId = materialIdsIndexes[node->getMaterialId()];
@@ -60,5 +60,6 @@ void SceneToPlainConverter::processMaterials(const std::vector<Material>& materi
         };
 
         materialIdsIndexes[material.getMateialId()] = index;
+        plainScene.materials.emplace_back(plainMaterial);
     }
 }

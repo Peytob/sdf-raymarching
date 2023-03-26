@@ -4,6 +4,7 @@
 #pragma once
 
 #include <string>
+#include <GL/gl.h>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 

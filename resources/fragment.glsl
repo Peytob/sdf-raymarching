@@ -146,6 +146,12 @@ SceneObject subtractionOp(SceneObject a, SceneObject b) {
 float processLeafSceneNodeDistance(vec3 point, int nodeIndex) {
     int figureType = nodes[nodeIndex].figureType;
 
+    point += vec3(
+        nodes[nodeIndex].localPositionX,
+        nodes[nodeIndex].localPositionY,
+        nodes[nodeIndex].localPositionZ
+    );
+
     if (FIGURE_SPHERE == figureType) {
         float radius = nodes[nodeIndex].figureVariable1;
         return sphereSdf(point, nodes[nodeIndex].figureVariable1);

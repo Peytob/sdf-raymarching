@@ -112,5 +112,5 @@ Scene* JsonSceneLoader::load(const std::string& jsonString) {
         scene->addMaterial(parseMaterial(materialNode));
     }
 
-    return new Scene(root);
+    return scene;
 }
