@@ -38,7 +38,7 @@ struct SceneNode {
 
     int operation;
 
-    // Костыль из-за выравнивания vec3 до vec4
+// Костыль из-за выравнивания vec3 до vec4
     float localPositionX;
     float localPositionY;
     float localPositionZ;
@@ -46,7 +46,7 @@ struct SceneNode {
     int materialId;
     int figureType;
 
-    // TODO Найти способ реализации union или его подобия в glsl!
+// TODO Найти способ реализации union или его подобия в glsl!
 
     float figureVariable1;
     float figureVariable2;
@@ -67,7 +67,7 @@ struct SceneNode {
 struct ObjectMaterial {
     vec4 color;
     vec4 specColor;
-    float shininess;
+    vec4 shininess;
 };
 
 /* - = - Buffers - = - */
@@ -147,9 +147,9 @@ float processLeafSceneNodeDistance(vec3 point, int nodeIndex) {
     int figureType = nodes[nodeIndex].figureType;
 
     point += vec3(
-        nodes[nodeIndex].localPositionX,
-        nodes[nodeIndex].localPositionY,
-        nodes[nodeIndex].localPositionZ
+    nodes[nodeIndex].localPositionX,
+    nodes[nodeIndex].localPositionY,
+    nodes[nodeIndex].localPositionZ
     );
 
     if (FIGURE_SPHERE == figureType) {
@@ -335,10 +335,10 @@ float shadowMarching(vec3 lightPosition, vec3 point) {
 */
 vec3 estimateNormal(vec3 point) {
     float sceneDist = map(point).distance;
-	return normalize(vec3(
-        map(vec3(point.x + EPSILON, point.y, point.z)).distance - sceneDist,
-        map(vec3(point.x, point.y + EPSILON, point.z)).distance - sceneDist,
-        map(vec3(point.x, point.y, point.z + EPSILON)).distance - sceneDist));
+    return normalize(vec3(
+    map(vec3(point.x + EPSILON, point.y, point.z)).distance - sceneDist,
+    map(vec3(point.x, point.y + EPSILON, point.z)).distance - sceneDist,
+    map(vec3(point.x, point.y, point.z + EPSILON)).distance - sceneDist));
 }
 
 /*
@@ -387,7 +387,7 @@ vec3 computeLightDiffuse(Light light, ObjectMaterial material, vec3 lightNormal,
 vec3 computeLightSpecular(Light light, ObjectMaterial material, vec3 lightNormal, vec3 objectNormal, vec3 eyeVector) {
     vec3 reflection = normalize(reflect(-lightNormal, objectNormal));
     float dotRV = max(0.0, dot(eyeVector, reflection));
-    float specularStrength = pow(dotRV, material.shininess);
+    float specularStrength = pow(dotRV, material.shininess.x);
     return specularStrength * material.specColor.xyz * light.color;
 }
 
@@ -400,7 +400,7 @@ float computeLightAttenuation(Light light, vec3 point) {
     float distanceToLight = length(light.position - point);
     LightAttenuation attenuation = light.attenuation;
     return 1.0 / (attenuation.constant + attenuation.linear * distanceToLight +
-        attenuation.quadratic * (distanceToLight * distanceToLight));
+    attenuation.quadratic * (distanceToLight * distanceToLight));
 }
 
 vec3 computePointLight(Light light, ObjectMaterial material, vec3 point, vec3 normal, vec3 eyeVector) {

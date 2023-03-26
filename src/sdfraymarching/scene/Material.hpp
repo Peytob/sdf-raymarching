@@ -14,7 +14,7 @@ public:
     struct Plain {
         glm::vec4 color;
         glm::vec4 specColor;
-        GLfloat shininess;
+        glm::vec4 shininess;
     };
 
     Material(const std::string& materialId) :

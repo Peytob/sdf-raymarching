@@ -56,7 +56,7 @@ void SceneToPlainConverter::processMaterials(const std::vector<Material>& materi
         Material::Plain plainMaterial {
             glm::vec4(material.getColor(), 0.0),
             glm::vec4(material.getSpecColor(), 0.0),
-            material.getShininess()
+            glm::vec4(material.getShininess())
         };
 
         materialIdsIndexes[material.getMateialId()] = index;
