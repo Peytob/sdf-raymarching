@@ -5,10 +5,11 @@
 
 class Scene;
 class Camera;
+class OpenGLRenderContext;
 
 class IDrawer {
 public:
-    ~IDrawer() = default;
+    virtual ~IDrawer() = default;
 
     virtual void drawScene(const Scene* scene, const OpenGLRenderContext& renderContext) = 0;
 
