@@ -5,10 +5,11 @@
 
 #pragma once
 
-class OpenGLRender;
+class OpenGLWrapper;
 class ShaderProgram;
 class Camera;
 class Scene;
+class IDrawer;
 
 class Application {
 public:
@@ -18,8 +19,8 @@ public:
     int start();
 
 private:
-    OpenGLRender* renderer;
-    ShaderProgram* worldShaderProgram;
+    OpenGLWrapper* openGlWrapper;
+    IDrawer* drawer;
     Scene* scene;
 
     Camera* camera;

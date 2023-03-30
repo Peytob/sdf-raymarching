@@ -41,6 +41,14 @@ SceneNode* SceneNode::getRightChild() {
     return rightChild;
 }
 
+const SceneNode* SceneNode::getLeftChild() const {
+    return leftChild;
+}
+
+const SceneNode* SceneNode::getRightChild() const {
+    return rightChild;
+}
+
 void SceneNode::setLeftChild(SceneNode* node) {
     this->leftChild = node;
 }

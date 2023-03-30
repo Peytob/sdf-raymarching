@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include <sdfraymarching/render/ShaderProgram.hpp>
+#include <glm/vec2.hpp>
 
 class Camera;
 
@@ -12,9 +12,6 @@ public:
     OpenGLRenderContext() = default;
     ~OpenGLRenderContext() = default;
 
-    ShaderProgram* getShaderProgram() const;
-    void setShaderProgram(ShaderProgram* shaderProgram);
-
     Camera* getCamera() const;
     void setCamera(Camera* camera);
 
@@ -22,7 +19,6 @@ public:
     const glm::ivec2& getResolution() const;
 
 private:
-    ShaderProgram* shaderProgram;
     Camera* camera;
     glm::ivec2 resolution;
 };

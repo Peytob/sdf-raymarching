@@ -6,7 +6,7 @@ namespace {
     const int NULL_NODE_INDEX = -1;
 }
 
-PlainScene SceneToPlainConverter::toPlainData(Scene* scene) {
+PlainScene SceneToPlainConverter::toPlainData(const Scene* scene) {
     reset();
     processMaterials(scene->getMaterials());
     processNode(scene->getRootNode(), glm::vec3(0.0f));
@@ -17,7 +17,7 @@ void SceneToPlainConverter::reset() {
     this->plainScene = PlainScene();
 }
 
-GLint SceneToPlainConverter::processNode(SceneNode* node, glm::vec3 localPosition) {
+GLint SceneToPlainConverter::processNode(const SceneNode* node, glm::vec3 localPosition) {
     if (nullptr == node) {
         return NULL_NODE_INDEX;
     }

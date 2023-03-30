@@ -11,14 +11,14 @@ public:
     SceneToPlainConverter() = default;
     ~SceneToPlainConverter() = default;
 
-    PlainScene toPlainData(Scene* scene);
+    PlainScene toPlainData(const Scene* scene);
 
 private:
     PlainScene plainScene;
     std::map<std::string, size_t> materialIdsIndexes;
 
     void reset();
-    GLint processNode(SceneNode* node, glm::vec3 localPosition);
+    GLint processNode(const SceneNode* node, glm::vec3 localPosition);
     void processMaterials(const std::vector<Material>& materials);
 };
 

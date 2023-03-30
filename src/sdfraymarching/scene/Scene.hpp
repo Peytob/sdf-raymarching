@@ -16,7 +16,8 @@ public:
     ~Scene();
 
     SceneNode* getRootNode();
-    const std::vector<Material>& getMaterials();
+    const SceneNode* getRootNode() const;
+    const std::vector<Material>& getMaterials() const;
     void addMaterial(const Material& material);
 
 private:

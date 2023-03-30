@@ -7,11 +7,12 @@
 #include <sdfraymarching/render/OpenGLRenderCreatingException.hpp>
 #include <sdfraymarching/render/OpenGLResourceCreatingException.hpp>
 #include <sdfraymarching/render/OpenGLRenderContext.hpp>
-#include <sdfraymarching/render/OpenGLRender.hpp>
+#include <sdfraymarching/render/OpenGLWrapper.hpp>
 #include <sdfraymarching/render/ShaderProgram.hpp>
 #include <sdfraymarching/render/Camera.hpp>
 #include <sdfraymarching/utils/FileUtils.hpp>
 #include <sdfraymarching/scene/SceneLoadException.hpp>
+#include <sdfraymarching/render/drawer/SceneTreeDrawer.hpp>
 
 #include <sdfraymarching/scene/Scene.hpp>
 #include <sdfraymarching/scene/JsonSceneLoader.hpp>
@@ -26,10 +27,10 @@ Application::Application() {
     Logger::info("Initializing raymarching demo application.");
 
     try {
-        this->renderer = new OpenGLRender(windowWidth, windowHeigth, "Ray marching");
+        this->openGlWrapper = new OpenGLWrapper(windowWidth, windowHeigth, "Ray marching");
         // TODO Hide GLFW features
-        this->renderer->setKeyCallback([](GLFWwindow* window, int key, int scancode, int action, int mode) {
-            OpenGLRender* render = static_cast<OpenGLRender*>(glfwGetWindowUserPointer(window));
+        this->openGlWrapper->setKeyCallback([](GLFWwindow* window, int key, int scancode, int action, int mode) {
+            OpenGLWrapper* render = static_cast<OpenGLWrapper*>(glfwGetWindowUserPointer(window));
             if (key == GLFW_KEY_ESCAPE) {
                 render->close();
             }
@@ -49,15 +50,8 @@ Application::Application() {
         std::exit(1);
     }
 
-    try {
-        Logger::info("Loading shader program");
-        this->worldShaderProgram = ShaderProgram::loadShaderProgram("./resources/vertex.glsl", "./resources/fragment.glsl");
-        glUseProgram(worldShaderProgram->getId());
-        renderer->updateSdfScene(scene);
-    } catch (const OpenGLResourceCreatingException& e) {
-        Logger::error("Error while loading world shader program. Description: " + std::string(e.what()));
-        std::exit(1);
-    }
+    this->drawer = new SceneTreeDrawer(this->openGlWrapper);
+    drawer->onSceneLoaded(scene);
 
     this->camera = new Camera(
         {0.0, 10.0, -5.0},
@@ -70,28 +64,25 @@ Application::Application() {
 
 Application::~Application() {
     Logger::info("Destroying raymarching demo application.");
-    delete this->renderer;
-    delete this->worldShaderProgram;
+    delete this->drawer;
+    delete this->openGlWrapper;
     delete this->camera;
     delete this->scene;
 }
 
 int Application::start() {
     OpenGLRenderContext renderContext;
-    renderContext.setShaderProgram(worldShaderProgram);
     renderContext.setCamera(camera);
-    renderContext.setResolution(renderer->getResolution());
+    renderContext.setResolution(openGlWrapper->getResolution());
 
-    renderer->resetCursor();
-    renderer->updateStaticUniforms(renderContext);
+    openGlWrapper->resetCursor();
 
-    while (!renderer->isClosed()) {
+    while (!openGlWrapper->isClosed()) {
         processControl();
-        renderer->pullEvents();
-        renderer->clear();
-        renderer->updateDynamicUniforms(renderContext);
-        renderer->draw(renderContext);
-        renderer->display();
+        openGlWrapper->pullEvents();
+        openGlWrapper->clear();
+        drawer->drawScene(scene, renderContext);
+        openGlWrapper->display();
     }
 
     return 0;
@@ -102,7 +93,7 @@ void Application::processControl() {
     const float moveSpeed = 0.25f;
     const float mouseSensivity = 0.5f;
 
-    glm::vec2 cursorDelta = renderer->getCursorDelta();
+    glm::vec2 cursorDelta = openGlWrapper->getCursorDelta();
 
     if (glm::length(cursorDelta) > FLT_EPSILON) {
         camera->rotate(cursorDelta.x * mouseSensivity, -cursorDelta.y * mouseSensivity);
@@ -110,19 +101,19 @@ void Application::processControl() {
 
     glm::vec3 moveVector(0.0f);
 
-    if (renderer->getKeyStatus(GLFW_KEY_W) == GLFW_PRESS) {
+    if (openGlWrapper->getKeyStatus(GLFW_KEY_W) == GLFW_PRESS) {
         moveVector += camera->getFrontVector() * moveSpeed;
     }
 
-    if (renderer->getKeyStatus(GLFW_KEY_S) == GLFW_PRESS) {
+    if (openGlWrapper->getKeyStatus(GLFW_KEY_S) == GLFW_PRESS) {
         moveVector -= camera->getFrontVector() * moveSpeed;
     }
 
-    if (renderer->getKeyStatus(GLFW_KEY_D) == GLFW_PRESS) {
+    if (openGlWrapper->getKeyStatus(GLFW_KEY_D) == GLFW_PRESS) {
         moveVector += camera->getRigthVector() * moveSpeed;
     }
 
-    if (renderer->getKeyStatus(GLFW_KEY_A) == GLFW_PRESS) {
+    if (openGlWrapper->getKeyStatus(GLFW_KEY_A) == GLFW_PRESS) {
         moveVector -= camera->getRigthVector() * moveSpeed;
     }
 
@@ -130,5 +121,5 @@ void Application::processControl() {
         camera->move(moveVector);
     }
 
-    renderer->resetCursor();
+    openGlWrapper->resetCursor();
 }

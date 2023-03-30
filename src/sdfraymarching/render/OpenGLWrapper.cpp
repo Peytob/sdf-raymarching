@@ -9,13 +9,13 @@
 #include <sdfraymarching/render/ShaderStorageBuffer.hpp>
 #include <sdfraymarching/render/OpenGLRenderCreatingException.hpp>
 #include <sdfraymarching/render/OpenGLRenderContext.hpp>
+#include <sdfraymarching/render/ShaderProgram.hpp>
 #include <sdfraymarching/render/Camera.hpp>
-#include <sdfraymarching/render/ShaderStorageBuffer.hpp>
 #include <sdfraymarching/scene/SceneToPlainConverter.hpp>
 
 #include <sdfraymarching/scene/Scene.hpp>
 
-#include "OpenGLRender.hpp"
+#include "OpenGLWrapper.hpp"
 
 void initializeGlfw() {
     if (glfwInit() != GLFW_TRUE) {
@@ -62,7 +62,7 @@ void initializeGlew() {
     }
 }
 
-OpenGLRender::OpenGLRender(int width, int height, const std::string& title) :
+OpenGLWrapper::OpenGLWrapper(int width, int height, const std::string& title) :
     window(nullptr),
     defaultCursorPosition(width / 2, height / 2) {
 
@@ -84,11 +84,9 @@ OpenGLRender::OpenGLRender(int width, int height, const std::string& title) :
     Logger::info("GLEW library initialized.");
 
     this->canvas = new Canvas();
-    this->sceneBuffer = new ShaderStorageBuffer(1);
-    this->materialBuffer = new ShaderStorageBuffer(2);
 }
 
-OpenGLRender::~OpenGLRender() {
+OpenGLWrapper::~OpenGLWrapper() {
     Logger::info("Destroying OpenGL rendering engine.");
 
     Logger::info("Destroying GLFW window");
@@ -100,89 +98,65 @@ OpenGLRender::~OpenGLRender() {
     Logger::info("GLFW library terminated.");
 
     delete canvas;
-    delete sceneBuffer;
-    delete materialBuffer;
 }
 
-glm::vec2 OpenGLRender::getCursorDelta() const {
+glm::vec2 OpenGLWrapper::getCursorDelta() const {
     double xpos, ypos;
     glfwGetCursorPos(window, &xpos, &ypos);
     return glm::vec2(xpos, ypos) - defaultCursorPosition;
 }
 
-bool OpenGLRender::isClosed() {
+bool OpenGLWrapper::isClosed() {
     return glfwWindowShouldClose(window);
 }
 
-void OpenGLRender::close() {
+void OpenGLWrapper::close() {
     glfwSetWindowShouldClose(window, true);
 }
 
-void OpenGLRender::setKeyCallback(GLFWkeyfun callback) {
+void OpenGLWrapper::setKeyCallback(GLFWkeyfun callback) {
     Logger::info("Setup window key callback");
     glfwSetKeyCallback(window, callback);
 }
 
-glm::ivec2 OpenGLRender::getResolution() const {
+glm::ivec2 OpenGLWrapper::getResolution() const {
     int width, height;
     glfwGetWindowSize(window, &width, &height);
     return { width, height };
 }
 
-void OpenGLRender::updateSdfScene(Scene* scene) {
-    Logger::info("Updating SDF scene");
-
-    SceneToPlainConverter converter;
-    PlainScene plainScene = converter.toPlainData(scene);
-
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, sceneBuffer->getId());
-    sceneBuffer->writeData(sizeof(SceneNode::Plain) * plainScene.nodes.size(), static_cast<void*>(plainScene.nodes.data()), GL_STATIC_DRAW);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, materialBuffer->getId());
-    materialBuffer->writeData(sizeof(Material::Plain) * plainScene.materials.size(), static_cast<void*>(plainScene.materials.data()), GL_STATIC_DRAW);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-}
-
-void OpenGLRender::draw(const OpenGLRenderContext& renderContext) {
-    glUseProgram(renderContext.getShaderProgram()->getId());
+void OpenGLWrapper::draw(const OpenGLRenderContext& renderContext) {
     glBindVertexArray(canvas->getVao());
     glDrawElements(GL_TRIANGLES, canvas->getIndexesCount(), GL_UNSIGNED_INT, 0);
 }
 
-void OpenGLRender::resetCursor() {
+void OpenGLWrapper::resetCursor() {
     glfwSetCursorPos(window, defaultCursorPosition.x, defaultCursorPosition.y);
 }
 
-void OpenGLRender::pullEvents() {
+void OpenGLWrapper::pullEvents() {
     glfwPollEvents();
 }
 
-void OpenGLRender::clear() {
+void OpenGLWrapper::clear() {
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 }
 
-void OpenGLRender::display() {
+void OpenGLWrapper::display() {
     glfwSwapBuffers(window);
 }
 
-int OpenGLRender::getKeyStatus(int key) {
+int OpenGLWrapper::getKeyStatus(int key) {
     return glfwGetKey(window, key);
 }
 
-void OpenGLRender::updateDynamicUniforms(const OpenGLRenderContext& renderContext) {
-    ShaderProgram* shaderProgram = renderContext.getShaderProgram();
-
-    glUseProgram(shaderProgram->getId());
+void OpenGLWrapper::updateDynamicUniforms(const OpenGLRenderContext& renderContext, ShaderProgram* shaderProgram) {
     Camera* camera = renderContext.getCamera();
-    renderContext.getShaderProgram()->setUniform("u_view", camera->computeLookAtMatrix());
-    renderContext.getShaderProgram()->setUniform("u_cameraPosition", camera->getPosition());
+    shaderProgram->setUniform("u_view", camera->computeLookAtMatrix());
+    shaderProgram->setUniform("u_cameraPosition", camera->getPosition());
 }
 
-void OpenGLRender::updateStaticUniforms(const OpenGLRenderContext& renderContext) {
-    ShaderProgram* shaderProgram = renderContext.getShaderProgram();
-
-    glUseProgram(shaderProgram->getId());
-    renderContext.getShaderProgram()->setUniform("u_resolution", renderContext.getResolution());
+void OpenGLWrapper::updateStaticUniforms(const OpenGLRenderContext& renderContext, ShaderProgram* shaderProgram) {
+    shaderProgram->setUniform("u_resolution", renderContext.getResolution());
 }

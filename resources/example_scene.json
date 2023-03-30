@@ -3,38 +3,100 @@
         "operation": "merge",
         "left": {
             "operation": "leaf",
-            "localPosition": [1.0, 2.0, 3.0],
-            "materialId": "b",
+            "materialId": "grey",
             "figure": {
-                "type": "sphere",
-                "radius": 1.0
+                "type": "plane",
+                "distanceFromOrigin": 0.0,
+                "normal": [0.0, 1.0, 0.0]
             }
         },
 
         "right": {
-            "operation": "leaf",
-            "materialId": "a",
-            "figure": {
-                "type": "cylinder",
-                "radius": 0.5,
-                "height": 2.0
+            "operation": "merge",
+            "left": {
+                "operation": "leaf",
+                "materialId": "brass",
+                "localPosition": [0.0, -1.0, 0.0],
+                "figure": {
+                    "type": "cylinder",
+                    "radius": 0.5,
+                    "height": 2.0
+                }
+            },
+
+            "right": {
+                "operation": "merge",
+                "left": {
+                    "operation": "leaf",
+                    "materialId": "emerald",
+                    "localPosition": [-3.0, -0.5, -5.0],
+                    "figure": {
+                        "type": "box",
+                        "sizes": [1.0, 1.0, 1.0]
+                    }
+                },
+
+                "right": {
+                    "operation": "merge",
+                    "left": {
+                        "operation": "leaf",
+                        "materialId": "chrome",
+                        "localPosition": [-3.0, -0.5, 5.0],
+                        "figure": {
+                            "type": "torus",
+                            "largeRadius": 1.0,
+                            "smallRadius": 0.5
+                        }
+                    },
+
+                    "right": {
+                        "operation": "leaf",
+                        "materialId": "gold",
+                        "localPosition": [-3.0, -0.5, 0.0],
+                        "figure": {
+                            "type": "sphere",
+                            "radius": 1.0
+                        }
+                    }
+                }
             }
         }
     },
 
     "material": [
         {
-            "id": "a",
-            "color": [1.0, 0.5, 0.4],
+            "id": "brass",
+            "color": [0.992157, 0.780392, 0.329412],
             "specColor": [1.0, 1.0, 1.0],
-            "shininess": 8.0
+            "shininess": 27.8974
         },
 
         {
-            "id": "b",
-            "color": [0.3, 0.7, 0.1],
+            "id": "chrome",
+            "color": [0.77, 0.4, 0.45],
             "specColor": [1.0, 1.0, 1.0],
-            "shininess": 16.0
+            "shininess": 76.0
+        },
+
+        {
+            "id": "emerald",
+            "color": [0.633, 0.07, 0.02],
+            "specColor": [1.0, 1.0, 1.0],
+            "shininess": 76.0
+        },
+
+        {
+            "id": "gold",
+            "color": [0.62, 0.75, 0.24],
+            "specColor": [1.0, 1.0, 1.0],
+            "shininess": 4.0
+        },
+
+        {
+            "id": "grey",
+            "color": [0.4, 0.4, 0.4],
+            "specColor": [1.0, 1.0, 1.0],
+            "shininess": 128.0
         }
     ]
 }

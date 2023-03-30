@@ -13,7 +13,11 @@ SceneNode* Scene::getRootNode() {
     return this->rootNode;
 }
 
-const std::vector<Material>& Scene::getMaterials() {
+const SceneNode* Scene::getRootNode() const {
+    return this->rootNode;
+}
+
+const std::vector<Material>& Scene::getMaterials() const {
     return this->materials;
 }
 

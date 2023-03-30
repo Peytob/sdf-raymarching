@@ -39,6 +39,9 @@ public:
     SceneNode* getLeftChild();
     SceneNode* getRightChild();
 
+    const SceneNode* getLeftChild() const;
+    const SceneNode* getRightChild() const;
+
     void setLeftChild(SceneNode* node);
     void setRightChild(SceneNode* node);
 

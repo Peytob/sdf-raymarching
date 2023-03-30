@@ -1,5 +1,5 @@
-#ifndef OPENGLRENDER_HPP
-#define OPENGLRENDER_HPP
+#ifndef OPENGLWRAPPER_HPP
+#define OPENGLWRAPPER_HPP
 
 #pragma once
 
@@ -12,14 +12,14 @@ class Canvas;
 class ShaderStorageBuffer;
 class OpenGLRenderContext;
 class Scene;
+class ShaderProgram;
 
-class OpenGLRender final {
+class OpenGLWrapper final {
 public:
-    OpenGLRender(int width, int height, const std::string& title);
-    ~OpenGLRender();
+    OpenGLWrapper(int width, int height, const std::string& title);
+    ~OpenGLWrapper();
 
     void resetCursor();
-    void updateSdfScene(Scene* scene);
     void draw(const OpenGLRenderContext& renderContext);
     void pullEvents();
     void clear();
@@ -34,14 +34,12 @@ public:
 
     glm::ivec2 getResolution() const;
 
-    void updateDynamicUniforms(const OpenGLRenderContext& renderContext);
-    void updateStaticUniforms(const OpenGLRenderContext& renderContext);
+    void updateDynamicUniforms(const OpenGLRenderContext& renderContext, ShaderProgram* shaderProgram);
+    void updateStaticUniforms(const OpenGLRenderContext& renderContext, ShaderProgram* shaderProgram);
 
 private:
     GLFWwindow* window;
     Canvas* canvas;
-    ShaderStorageBuffer* sceneBuffer;
-    ShaderStorageBuffer* materialBuffer;
 
     glm::vec2 defaultCursorPosition;
 };
