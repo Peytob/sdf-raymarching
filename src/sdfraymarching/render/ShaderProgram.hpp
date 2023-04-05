@@ -5,6 +5,8 @@
 
 #include <GL/gl.h>
 #include <glm/glm.hpp>
+
+#include <map>
 #include <string>
 
 class Shader;
@@ -12,7 +14,7 @@ class Shader;
 class ShaderProgram
 {
 public:
-    static ShaderProgram* loadShaderProgram(const std::string& vertexShaderFile, const std::string& fragmentShaderFile);
+    static ShaderProgram* loadShaderProgram(const std::string& vertexShaderFile, const std::string& fragmentShaderFile, const std::map<std::string, std::string>& generatedIncludes = std::map<std::string, std::string>());
 
     ShaderProgram(const Shader& vertexShader, const Shader& fragmentShader);
     ~ShaderProgram();

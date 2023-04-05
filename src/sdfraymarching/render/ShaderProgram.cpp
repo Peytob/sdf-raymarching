@@ -11,18 +11,20 @@
 
 #include "ShaderProgram.hpp"
 
-ShaderProgram* ShaderProgram::loadShaderProgram(const std::string& vertexShaderFile, const std::string& fragmentShaderFile) {
+ShaderProgram* ShaderProgram::loadShaderProgram(const std::string& vertexShaderFile, const std::string& fragmentShaderFile, const std::map<std::string, std::string>& generatedIncludes) {
     auto vertexFiles = FileUtils::splitFolderAndFilename(vertexShaderFile);
     Shader vertexShader = ShaderPreprocessor::loadShaderWithPreprocessor(
         vertexFiles.first,
         vertexFiles.second,
-        GL_VERTEX_SHADER);
+        GL_VERTEX_SHADER,
+        generatedIncludes);
 
     auto fragmentFiles = FileUtils::splitFolderAndFilename(fragmentShaderFile);
     Shader fragmentShader = ShaderPreprocessor::loadShaderWithPreprocessor(
         fragmentFiles.first,
         fragmentFiles.second,
-        GL_FRAGMENT_SHADER);
+        GL_FRAGMENT_SHADER,
+        generatedIncludes);
 
     return new ShaderProgram(vertexShader, fragmentShader);
 }

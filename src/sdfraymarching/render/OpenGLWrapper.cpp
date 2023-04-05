@@ -20,10 +20,10 @@
 void initializeGlfw() {
     if (glfwInit() != GLFW_TRUE) {
         const char* errorDescription;
-        const int errorCode = glfwGetError(&errorDescription);
+        // const int errorCode = glfwGetError(&errorDescription);
 
         std::string message =
-            "Error while GLFW initializating! Code: " + std::to_string(errorCode) +
+            "Error while GLFW initializating! Code: " + std::to_string(-1) +
             "; description: " + std::string(errorDescription);
 
         throw OpenGLRenderCreatingException(message);
@@ -40,7 +40,7 @@ GLFWwindow* createWindow(int width, int height, const std::string& title) {
 
     if (nullptr == window) {
         const char* description;
-        glfwGetError(&description);
+        // glfwGetError(&description);
 
         std::string message = "Error while creating GLFW window. " + std::string(description);
 

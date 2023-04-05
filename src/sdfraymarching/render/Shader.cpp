@@ -8,7 +8,7 @@ Shader::Shader(const std::string& code, GLenum type) :
     type(type),
     id(glCreateShader(type)) {
 
-    Logger::info("Created shader with id " + std::to_string(id));
+    Logger::info("Creating shader with id " + std::to_string(id));
 
     const char *c_str = code.c_str();
     glShaderSource(id, 1, &c_str, nullptr);

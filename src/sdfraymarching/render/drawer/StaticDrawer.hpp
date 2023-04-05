@@ -1,5 +1,5 @@
-#ifndef SCENETREEDRAWER_HPP
-#define SCENETREEDRAWER_HPP
+#ifndef STATICDRAWER_HPP
+#define STATICDRAWER_HPP
 
 #pragma once
 
@@ -8,10 +8,10 @@
 
 class ShaderProgram;
 
-class SceneTreeDrawer : public IDrawer {
+class StaticDrawer : public IDrawer {
 public:
-    SceneTreeDrawer(OpenGLWrapper* openGLWrapper);
-    ~SceneTreeDrawer();
+    StaticDrawer(OpenGLWrapper* openGLWrapper);
+    ~StaticDrawer();
 
     void drawScene(const Scene* scene, const OpenGLRenderContext& renderContext) override;
 
@@ -21,7 +21,6 @@ public:
 private:
     OpenGLWrapper* openGLWrapper;
     ShaderProgram* worldShaderProgram;
-    ShaderStorageBuffer* sceneBuffer;
     ShaderStorageBuffer* materialBuffer;
 };
 

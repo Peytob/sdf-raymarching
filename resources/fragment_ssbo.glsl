@@ -79,10 +79,10 @@ SceneObject COMPUTING_TREE_STACK[COMPUTING_TREE_STACK_MAX_SIZE];
 float processLeafSceneNodeDistance(vec3 point, int nodeIndex) {
     int figureType = nodes[nodeIndex].figureType;
 
-    point += vec3(
-    nodes[nodeIndex].localPositionX,
-    nodes[nodeIndex].localPositionY,
-    nodes[nodeIndex].localPositionZ
+    point -= vec3(
+        nodes[nodeIndex].localPositionX,
+        nodes[nodeIndex].localPositionY,
+        nodes[nodeIndex].localPositionZ
     );
 
     if (FIGURE_SPHERE == figureType) {

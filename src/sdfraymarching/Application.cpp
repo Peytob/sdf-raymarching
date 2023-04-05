@@ -12,7 +12,7 @@
 #include <sdfraymarching/render/Camera.hpp>
 #include <sdfraymarching/utils/FileUtils.hpp>
 #include <sdfraymarching/scene/SceneLoadException.hpp>
-#include <sdfraymarching/render/drawer/SceneTreeDrawer.hpp>
+#include <sdfraymarching/render/drawer/StaticDrawer.hpp>
 
 #include <sdfraymarching/scene/Scene.hpp>
 #include <sdfraymarching/scene/JsonSceneLoader.hpp>
@@ -51,13 +51,11 @@ Application::Application() {
     }
 
     try {
-        this->drawer = new SceneTreeDrawer(this->openGlWrapper);
-    } catch (const OpenGLResourceCreatingException& e) {
-        Logger::error("Error while creating scene drawer: " + std::string(e.what()));
-        std::exit(1);
+        this->drawer = new StaticDrawer(this->openGlWrapper);
+        drawer->onSceneLoaded(scene);
+    } catch (OpenGLResourceCreatingException exception) {
+        Logger::error("Error while creating drawer or loading drawer resources: " + std::string(exception.what()));
     }
-
-    drawer->onSceneLoaded(scene);
 
     this->camera = new Camera(
         {0.0, 10.0, -5.0},
