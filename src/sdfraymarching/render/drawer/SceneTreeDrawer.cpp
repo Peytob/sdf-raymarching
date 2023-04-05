@@ -15,7 +15,7 @@
 namespace {
 
 ShaderProgram* loadStaticSsboProgram() {
-    ShaderProgram* shaderProgram = ShaderProgram::loadShaderProgram("./resources/vertex.glsl", "./resources/fragment.glsl");
+    ShaderProgram* shaderProgram = ShaderProgram::loadShaderProgram("./resources/vertex.glsl", "./resources/fragment_ssbo.glsl");
     glUseProgram(shaderProgram->getId());
     return shaderProgram;
 }

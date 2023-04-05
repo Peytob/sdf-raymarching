@@ -3,18 +3,26 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <sdfraymarching/render/OpenGLResourceCreatingException.hpp>
+#include <sdfraymarching/render/ShaderPreprocessor.hpp>
+#include <sdfraymarching/render/Shader.hpp>
+
 #include <sdfraymarching/utils/Logger.hpp>
 #include <sdfraymarching/utils/FileUtils.hpp>
-#include <sdfraymarching/render/Shader.hpp>
 
 #include "ShaderProgram.hpp"
 
 ShaderProgram* ShaderProgram::loadShaderProgram(const std::string& vertexShaderFile, const std::string& fragmentShaderFile) {
-    std::string vertexShaderCode = FileUtils::readFile(vertexShaderFile);
-    Shader vertexShader(vertexShaderCode, GL_VERTEX_SHADER);
+    auto vertexFiles = FileUtils::splitFolderAndFilename(vertexShaderFile);
+    Shader vertexShader = ShaderPreprocessor::loadShaderWithPreprocessor(
+        vertexFiles.first,
+        vertexFiles.second,
+        GL_VERTEX_SHADER);
 
-    std::string fragmentShaderCode = FileUtils::readFile(fragmentShaderFile);
-    Shader fragmentShader(fragmentShaderCode, GL_FRAGMENT_SHADER);
+    auto fragmentFiles = FileUtils::splitFolderAndFilename(fragmentShaderFile);
+    Shader fragmentShader = ShaderPreprocessor::loadShaderWithPreprocessor(
+        fragmentFiles.first,
+        fragmentFiles.second,
+        GL_FRAGMENT_SHADER);
 
     return new ShaderProgram(vertexShader, fragmentShader);
 }

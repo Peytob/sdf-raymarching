@@ -50,7 +50,13 @@ Application::Application() {
         std::exit(1);
     }
 
-    this->drawer = new SceneTreeDrawer(this->openGlWrapper);
+    try {
+        this->drawer = new SceneTreeDrawer(this->openGlWrapper);
+    } catch (const OpenGLResourceCreatingException& e) {
+        Logger::error("Error while creating scene drawer: " + std::string(e.what()));
+        std::exit(1);
+    }
+
     drawer->onSceneLoaded(scene);
 
     this->camera = new Camera(
