@@ -16,7 +16,7 @@
             "left": {
                 "operation": "leaf",
                 "materialId": "brass",
-                "localPosition": [0.0, -1.0, 0.0],
+                "localPosition": [0.0, 1.0, 0.0],
                 "figure": {
                     "type": "cylinder",
                     "radius": 0.5,
@@ -29,7 +29,7 @@
                 "left": {
                     "operation": "leaf",
                     "materialId": "emerald",
-                    "localPosition": [-3.0, -0.5, -5.0],
+                    "localPosition": [3.0, 1.0, 5.0],
                     "figure": {
                         "type": "box",
                         "sizes": [1.0, 1.0, 1.0]
@@ -41,7 +41,7 @@
                     "left": {
                         "operation": "leaf",
                         "materialId": "chrome",
-                        "localPosition": [-3.0, -0.5, 5.0],
+                        "localPosition": [3.0, 0.5, -5.0],
                         "figure": {
                             "type": "torus",
                             "largeRadius": 1.0,
@@ -52,7 +52,7 @@
                     "right": {
                         "operation": "leaf",
                         "materialId": "gold",
-                        "localPosition": [-3.0, -0.5, 0.0],
+                        "localPosition": [3.0, 1.0, 0.0],
                         "figure": {
                             "type": "sphere",
                             "radius": 1.0
