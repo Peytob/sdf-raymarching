@@ -10,8 +10,8 @@ class ShaderProgram;
 
 class StaticDrawer : public IDrawer {
 public:
-    StaticDrawer(OpenGLWrapper* openGLWrapper);
-    ~StaticDrawer();
+    explicit StaticDrawer(OpenGLWrapper* openGLWrapper);
+    ~StaticDrawer() override;
 
     void drawScene(const Scene* scene, const OpenGLRenderContext& renderContext) override;
 
@@ -22,6 +22,8 @@ private:
     OpenGLWrapper* openGLWrapper;
     ShaderProgram* worldShaderProgram;
     ShaderStorageBuffer* materialBuffer;
+
+    void reloadShaderProgram(const Scene* scene);
 };
 
 #endif

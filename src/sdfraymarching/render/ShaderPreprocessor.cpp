@@ -9,7 +9,8 @@
 
 namespace {
 
-static const std::regex PRAGMA_REGEX = std::regex("^#pragma include \"(.+)\"");
+const std::regex PRAGMA_REGEX = std::regex("^#pragma include \"(.+)\"");
+
 std::string loadFileWithPreprocessor(const std::string& baseFolder, const std::string& filename, std::map<std::string, std::string>& loadedIncludes) {
     const std::string filePath = baseFolder + "/" + filename;
 
@@ -22,7 +23,12 @@ std::string loadFileWithPreprocessor(const std::string& baseFolder, const std::s
         std::smatch lineMatch;
 
         if (std::regex_match(lineBuffer, lineMatch, PRAGMA_REGEX)) {
-            lineBuffer = loadFileWithPreprocessor(baseFolder, lineMatch[1], loadedIncludes);
+            std::string includeFile = lineMatch[1];
+            if (loadedIncludes.find(includeFile) == loadedIncludes.end()) {
+                lineBuffer = loadFileWithPreprocessor(baseFolder, lineMatch[1], loadedIncludes);
+            } else {
+                lineBuffer = loadedIncludes[includeFile];
+            }
         }
 
         readedFileBuffer += lineBuffer + "\n";

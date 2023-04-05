@@ -53,8 +53,9 @@ Application::Application() {
     try {
         this->drawer = new StaticDrawer(this->openGlWrapper);
         drawer->onSceneLoaded(scene);
-    } catch (OpenGLResourceCreatingException exception) {
+    } catch (const OpenGLResourceCreatingException& exception) {
         Logger::error("Error while creating drawer or loading drawer resources: " + std::string(exception.what()));
+        std::exit(1);
     }
 
     this->camera = new Camera(

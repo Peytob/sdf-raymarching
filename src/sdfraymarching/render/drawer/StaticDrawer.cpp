@@ -1,4 +1,5 @@
 #include <stdexcept>
+#include <map>
 #include <GL/glew.h>
 
 #include <sdfraymarching/utils/Logger.hpp>
@@ -9,13 +10,21 @@
 #include <sdfraymarching/scene/Scene.hpp>
 #include <sdfraymarching/scene/PlainScene.hpp>
 #include <sdfraymarching/scene/SceneToPlainConverter.hpp>
+#include <sdfraymarching/scene/SceneSdfMethodGenerator.hpp>
 
 #include "StaticDrawer.hpp"
-
+#include <iostream>
 namespace {
 
-ShaderProgram* generateStaticProgram() {
-    ShaderProgram* shaderProgram = ShaderProgram::loadShaderProgram("./resources/vertex.glsl", "./resources/fragment_static.glsl");
+ShaderProgram* generateStaticProgram(const Scene* scene) {
+    std::map<std::string, std::string> generatedIncludes;
+    generatedIncludes["GENERATED_SCENE_DATA"] = SceneSdfMethodGenerator::generateSceneSdfMethod(scene);
+    std::cout << generatedIncludes["GENERATED_SCENE_DATA"] << std::endl;
+    ShaderProgram* shaderProgram = ShaderProgram::loadShaderProgram(
+            "./resources/vertex.glsl",
+            "./resources/fragment_static.glsl",
+            generatedIncludes);
+
     glUseProgram(shaderProgram->getId());
     return shaderProgram;
 }
@@ -32,6 +41,7 @@ StaticDrawer::StaticDrawer(OpenGLWrapper* openGLWrapper) :
     }
 
     this->materialBuffer = new ShaderStorageBuffer(2);
+    this->worldShaderProgram = nullptr;
 };
 
 StaticDrawer::~StaticDrawer() {
@@ -55,8 +65,15 @@ void StaticDrawer::onSceneUpdated(const Scene* scene) {
     SceneToPlainConverter converter;
     PlainScene plainScene = converter.toPlainData(scene);
 
+    reloadShaderProgram(scene);
+
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, materialBuffer->getId());
     materialBuffer->writeData(sizeof(Material::Plain) * plainScene.materials.size(), static_cast<void*>(plainScene.materials.data()), GL_STATIC_DRAW);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+}
+
+void StaticDrawer::reloadShaderProgram(const Scene* scene) {
+    delete worldShaderProgram;
+    worldShaderProgram = generateStaticProgram(scene);
 }
 
