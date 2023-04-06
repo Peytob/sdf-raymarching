@@ -66,7 +66,7 @@ SceneObject intersectionOp(SceneObject a, SceneObject b) {
 }
 
 SceneObject subtractionOp(SceneObject a, SceneObject b) {
-    return -a.distance < b.distance ? b : SceneObject(a.materialId, -a.distance);
+    return -b.distance < a.distance ? a : SceneObject(b.materialId, -b.distance);
 }
 
 // Should be implemented in include files.

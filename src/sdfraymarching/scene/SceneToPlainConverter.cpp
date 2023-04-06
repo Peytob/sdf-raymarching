@@ -17,7 +17,7 @@ void SceneToPlainConverter::reset() {
     this->plainScene = PlainScene();
 }
 
-GLint SceneToPlainConverter::processNode(const SceneNode* node, glm::vec3 localPosition) {
+GLint SceneToPlainConverter::processNode(const SceneNode* node, const glm::vec3& localPosition) {
     if (nullptr == node) {
         return NULL_NODE_INDEX;
     }

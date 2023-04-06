@@ -19,7 +19,7 @@ private:
     std::map<std::string, size_t> materialIdsIndexes;
 
     void reset();
-    GLint processNode(const SceneNode* node, glm::vec3 localPosition);
+    GLint processNode(const SceneNode* node, const glm::vec3& localPosition);
     void processMaterials(const std::vector<Material>& materials);
 };
 

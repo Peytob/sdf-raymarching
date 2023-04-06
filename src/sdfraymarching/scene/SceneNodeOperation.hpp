@@ -7,7 +7,7 @@
 
 enum SceneNodeOperation : GLint {
     LEAF = 0,
-    SUBSTRACTION = 1,
+    SUBTRACTION = 1,
     MERGE = 2,
     INTERSECTION = 3,
 };

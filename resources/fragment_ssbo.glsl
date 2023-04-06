@@ -14,7 +14,7 @@ const int FIGURE_CYLINDER = 5;
 
 const int NULL_NODE_INDEX = -1;
 const int OPERATION_LEAF = 0;
-const int OPERATION_SUBSTRACTION = 1;
+const int OPERATION_SUBTRACTION = 1;
 const int OPERATION_MERGE = 2;
 const int OPERATION_INTERSECTION = 3;
 
@@ -140,7 +140,7 @@ SceneObject processSceneNode(vec3 point, int nodeIndex) {
     SceneObject left = popComputingSceneStack();
     SceneObject right = popComputingSceneStack();
 
-    if (OPERATION_SUBSTRACTION == nodeOperation) {
+    if (OPERATION_SUBTRACTION == nodeOperation) {
         return subtractionOp(left, right);
     }
 

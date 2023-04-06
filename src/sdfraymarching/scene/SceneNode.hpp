@@ -15,7 +15,7 @@
 class SceneNode {
 public:
 
-    static SceneNode* substraction();
+    static SceneNode* subtraction();
     static SceneNode* merge();
     static SceneNode* intersection();
     static SceneNode* figure(

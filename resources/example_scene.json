@@ -50,12 +50,90 @@
                     },
 
                     "right": {
-                        "operation": "leaf",
-                        "materialId": "gold",
-                        "localPosition": [3.0, 1.0, 0.0],
-                        "figure": {
-                            "type": "sphere",
-                            "radius": 1.0
+                        "operation": "merge",
+                        "left": {
+                            "operation": "leaf",
+                            "materialId": "gold",
+                            "localPosition": [3.0, 1.0, 0.0],
+                            "figure": {
+                                "type": "sphere",
+                                "radius": 1.0
+                            }
+                        },
+
+                        "right": {
+                            "operation": "merge",
+                            "left": {
+                                "operation": "subtraction",
+                                "left": {
+                                    "operation": "leaf",
+                                    "materialId": "chrome",
+                                    "localPosition": [-5.0, 1.0, 0.0],
+                                    "figure": {
+                                        "type": "box",
+                                        "sizes": [1.0, 1.0, 1.0]
+                                    }
+                                },
+
+                                "right": {
+                                    "operation": "leaf",
+                                    "materialId": "gold",
+                                    "localPosition": [-5.0, 1.0, 0.0],
+                                    "figure": {
+                                        "type": "sphere",
+                                        "radius": 1.2
+                                    }
+                                }
+                            },
+
+                            "right": {
+                                "operation": "merge",
+                                "left": {
+                                    "operation": "intersection",
+                                    "left": {
+                                        "operation": "leaf",
+                                        "materialId": "emerald",
+                                        "localPosition": [-5.0, 1.0, 4.0],
+                                        "figure": {
+                                            "type": "box",
+                                            "sizes": [1.0, 1.0, 1.0]
+                                        }
+                                    },
+
+                                    "right": {
+                                        "operation": "leaf",
+                                        "materialId": "brass",
+                                        "localPosition": [-5.0, 1.0, 4.0],
+                                        "figure": {
+                                            "type": "sphere",
+                                            "radius": 1.2
+                                        }
+                                    }
+                                },
+
+                                "right": {
+                                    "operation": "merge",
+                                    "left": {
+                                        "operation": "leaf",
+                                        "materialId": "gold",
+                                        "localPosition": [-5.0, 1.0, -4.0],
+                                        "figure": {
+                                            "type": "box",
+                                            "sizes": [1.0, 1.0, 1.0]
+                                        }
+                                    },
+
+                                    "right": {
+                                        "operation": "leaf",
+                                        "materialId": "grey",
+                                        "localPosition": [-5.0, 1.0, -4.0],
+                                        "figure": {
+                                            "type": "sphere",
+                                            "radius": 1.2
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }

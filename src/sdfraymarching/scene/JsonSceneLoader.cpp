@@ -48,8 +48,8 @@ Figure parseFigure(const nlohmann::json& figureNode) {
 SceneNode* createOperationNode(const std::string& operation) {
     if (operation == "merge") {
         return SceneNode::merge();
-    } else if (operation == "substraction") {
-        return SceneNode::substraction();
+    } else if (operation == "subtraction") {
+        return SceneNode::subtraction();
     } else if (operation == "intersection") {
         return SceneNode::intersection();
     }
@@ -77,7 +77,6 @@ SceneNode* parseSceneNode(const nlohmann::json& jsonNode) {
     SceneNode* rightNode = parseSceneNode(jsonNode.at("right"));
     SceneNode* operationNode = createOperationNode(operation);
 
-    operationNode->setLocalPosition(localPosition);
     operationNode->setLeftChild(leftNode);
     operationNode->setRightChild(rightNode);
     operationNode->setLocalPosition(localPosition);

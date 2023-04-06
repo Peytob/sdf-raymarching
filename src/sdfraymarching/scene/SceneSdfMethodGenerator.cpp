@@ -62,7 +62,7 @@ std::string generateNodeSdf(const SceneNode* node, const std::map<std::string, s
         return "mergeOp(" + generateNodeSdf(node->getLeftChild(), materialIndexes) + "," + generateNodeSdf(node->getRightChild(), materialIndexes) + ")";
     }
 
-    if (SceneNodeOperation::SUBSTRACTION == node->getOperation()) {
+    if (SceneNodeOperation::SUBTRACTION == node->getOperation()) {
         return "subtractionOp(" + generateNodeSdf(node->getLeftChild(), materialIndexes) + "," + generateNodeSdf(node->getRightChild(), materialIndexes) + ")";
     }
 

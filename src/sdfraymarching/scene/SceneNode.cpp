@@ -1,7 +1,7 @@
 #include "SceneNode.hpp"
 
-SceneNode* SceneNode::substraction() {
-    return new SceneNode(SceneNodeOperation::SUBSTRACTION, glm::vec3(), Figure());
+SceneNode* SceneNode::subtraction() {
+    return new SceneNode(SceneNodeOperation::SUBTRACTION, glm::vec3(), Figure());
 }
 
 SceneNode* SceneNode::merge() {
