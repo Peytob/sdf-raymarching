@@ -6,7 +6,7 @@
 class Scene;
 
 namespace SceneSdfMethodGenerator {
-    std::string generateSceneSdfMethod(const Scene* scene);
+    std::string generateSceneSdfMethod(const Scene* scene, const std::map<std::string, size_t>& materialIndexes);
 }
 
 

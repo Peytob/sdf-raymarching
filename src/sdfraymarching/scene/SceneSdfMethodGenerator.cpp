@@ -37,31 +37,33 @@ std::string generateLeafSdfCall(const Figure& figure, const std::string& point) 
     return "UNDEFINED_LEAF_FIGURE";
 }
 
-std::string generateLeafSdf(const SceneNode* node) {
+std::string generateLeafSdf(const SceneNode* node, const std::map<std::string, size_t>& materialIndexes) {
     const Figure& figure = node->getFigure();
 
     const glm::vec3 position = node->getLocalPosition();
     const std::string point = "point - " + generateVec3String(position);
     const std::string function = generateLeafSdfCall(figure, point);
 
-    return "SceneObject(0, " + function + ")";
+    const size_t materialId = materialIndexes.at(node->getMaterialId());
+
+    return "SceneObject(" + std::to_string(materialId) + ", " + function + ")";
 }
 
-std::string generateNodeSdf(const SceneNode* node) {
+std::string generateNodeSdf(const SceneNode* node, const std::map<std::string, size_t>& materialIndexes) {
     if (SceneNodeOperation::LEAF == node->getOperation()) {
-        return generateLeafSdf(node);
+        return generateLeafSdf(node, materialIndexes);
     }
 
     if (SceneNodeOperation::INTERSECTION == node->getOperation()) {
-        return "intersectionOp(" + generateNodeSdf(node->getLeftChild()) + "," + generateNodeSdf(node->getRightChild()) + ")";
+        return "intersectionOp(" + generateNodeSdf(node->getLeftChild(), materialIndexes) + "," + generateNodeSdf(node->getRightChild(), materialIndexes) + ")";
     }
 
     if (SceneNodeOperation::MERGE == node->getOperation()) {
-        return "mergeOp(" + generateNodeSdf(node->getLeftChild()) + "," + generateNodeSdf(node->getRightChild()) + ")";
+        return "mergeOp(" + generateNodeSdf(node->getLeftChild(), materialIndexes) + "," + generateNodeSdf(node->getRightChild(), materialIndexes) + ")";
     }
 
     if (SceneNodeOperation::SUBSTRACTION == node->getOperation()) {
-        return "subtractionOp(" + generateNodeSdf(node->getLeftChild()) + "," + generateNodeSdf(node->getRightChild()) + ")";
+        return "subtractionOp(" + generateNodeSdf(node->getLeftChild(), materialIndexes) + "," + generateNodeSdf(node->getRightChild(), materialIndexes) + ")";
     }
 
     return "UNDEFINED_SDF_OPERATION";
@@ -69,8 +71,8 @@ std::string generateNodeSdf(const SceneNode* node) {
 
 }
 
-std::string SceneSdfMethodGenerator::generateSceneSdfMethod(const Scene* scene) {
+std::string SceneSdfMethodGenerator::generateSceneSdfMethod(const Scene* scene, const std::map<std::string, size_t>& materialIndexes) {
     return "void map(vec3 point, out SceneObject sceneObject) {\n"
-           "\tsceneObject = " + generateNodeSdf(scene->getRootNode()) + ";\n"
+           "\tsceneObject = " + generateNodeSdf(scene->getRootNode(), materialIndexes) + ";\n"
            "}";
 }

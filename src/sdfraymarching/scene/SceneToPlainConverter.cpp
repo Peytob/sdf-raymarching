@@ -63,3 +63,7 @@ void SceneToPlainConverter::processMaterials(const std::vector<Material>& materi
         plainScene.materials.emplace_back(plainMaterial);
     }
 }
+
+const std::map<std::string, size_t>& SceneToPlainConverter::getMaterialsIndexesMap() const {
+    return this->materialIdsIndexes;
+}

@@ -16,9 +16,9 @@
 #include <iostream>
 namespace {
 
-ShaderProgram* generateStaticProgram(const Scene* scene) {
+ShaderProgram* generateStaticProgram(const Scene* scene, const std::map<std::string, size_t>& materialIndexes) {
     std::map<std::string, std::string> generatedIncludes;
-    generatedIncludes["GENERATED_SCENE_DATA"] = SceneSdfMethodGenerator::generateSceneSdfMethod(scene);
+    generatedIncludes["GENERATED_SCENE_DATA"] = SceneSdfMethodGenerator::generateSceneSdfMethod(scene, materialIndexes);
     std::cout << generatedIncludes["GENERATED_SCENE_DATA"] << std::endl;
     ShaderProgram* shaderProgram = ShaderProgram::loadShaderProgram(
             "./resources/vertex.glsl",
@@ -65,15 +65,15 @@ void StaticDrawer::onSceneUpdated(const Scene* scene) {
     SceneToPlainConverter converter;
     PlainScene plainScene = converter.toPlainData(scene);
 
-    reloadShaderProgram(scene);
+    reloadShaderProgram(scene, converter.getMaterialsIndexesMap());
 
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, materialBuffer->getId());
     materialBuffer->writeData(sizeof(Material::Plain) * plainScene.materials.size(), static_cast<void*>(plainScene.materials.data()), GL_STATIC_DRAW);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
-void StaticDrawer::reloadShaderProgram(const Scene* scene) {
+void StaticDrawer::reloadShaderProgram(const Scene* scene, const std::map<std::string, size_t>& materialIndexes) {
     delete worldShaderProgram;
-    worldShaderProgram = generateStaticProgram(scene);
+    worldShaderProgram = generateStaticProgram(scene, materialIndexes);
 }
 

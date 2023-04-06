@@ -23,7 +23,7 @@ private:
     ShaderProgram* worldShaderProgram;
     ShaderStorageBuffer* materialBuffer;
 
-    void reloadShaderProgram(const Scene* scene);
+    void reloadShaderProgram(const Scene* scene, const std::map<std::string, size_t>& materialIndexes);
 };
 
 #endif

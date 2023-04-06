@@ -12,6 +12,7 @@ public:
     ~SceneToPlainConverter() = default;
 
     PlainScene toPlainData(const Scene* scene);
+    const std::map<std::string, size_t>& getMaterialsIndexesMap() const;
 
 private:
     PlainScene plainScene;
